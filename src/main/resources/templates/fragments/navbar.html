@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<body>
+    <!-- Navigation Fragment -->
+    <nav th:fragment="nav" class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-uppercase" href="/">
+                <i class="fas fa-bullhorn me-2"></i>ruomi.fi
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/advertisements">Все объявления</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Категории
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/advertisements?category=REAL_ESTATE">Недвижимость</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=VEHICLES">Транспорт</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=ELECTRONICS">Электроника</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=FURNITURE">Мебель</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=CLOTHING">Одежда</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=BOOKS">Книги</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=SPORTS">Спорт</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=SERVICES">Услуги</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=JOBS">Работа</a></li>
+                            <li><a class="dropdown-item" href="/advertisements?category=OTHER">Другое</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">О нас</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Контакты</a>
+                    </li>
+                </ul>
+                
+                <!-- Search Form -->
+                <form class="d-flex me-3" action="/advertisements" method="get">
+                    <input class="form-control me-2" type="search" name="search" placeholder="Поиск объявлений..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                
+                <!-- Auth Buttons -->
+                <div class="navbar-nav" sec:authorize="isAnonymous()">
+                    <a class="nav-link" href="/login">Войти</a>
+                    <a class="nav-link" href="/register">Регистрация</a>
+                </div>
+                
+                <!-- User Menu -->
+                <div class="navbar-nav dropdown" sec:authorize="isAuthenticated()">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-1"></i>
+                        <span th:text="${#authentication.name}">Пользователь</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile">
+                            <i class="fas fa-user-circle me-2"></i>Мой профиль
+                        </a></li>
+                        <li><a class="dropdown-item" href="/my-advertisements">
+                            <i class="fas fa-list me-2"></i>Мои объявления
+                        </a></li>
+                        <li><a class="dropdown-item" href="/subscriptions">
+                            <i class="fas fa-bell me-2"></i>Подписки
+                        </a></li>
+                            <li><a class="dropdown-item position-relative" href="/messages">
+                            <i class="fas fa-envelope me-2"></i>Сообщения
+                            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" 
+                                  id="unreadMessagesBadge"
+                                  style="font-size: 0.6rem; padding: 0.2rem 0.4rem; display: none;">0</span>
+                        </a></li>
+                        <li><a class="dropdown-item" href="/create-advertisement">
+                            <i class="fas fa-plus me-2"></i>Создать объявление
+                        </a></li>
+                        <li sec:authorize="hasAnyRole('MODERATOR', 'ADMIN', 'SUPER_ADMIN')">
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li sec:authorize="hasAnyRole('MODERATOR', 'ADMIN', 'SUPER_ADMIN')">
+                            <a class="dropdown-item" href="/moderator/dashboard">
+                                <i class="fas fa-shield-alt me-2"></i>Кабинет модератора
+                            </a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('MODERATOR', 'ADMIN', 'SUPER_ADMIN')">
+                            <a class="dropdown-item" href="/moderator/analytics">
+                                <i class="fas fa-chart-line me-2"></i>Аналитика поиска
+                            </a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                            <a class="dropdown-item" href="/admin/seo">
+                                <i class="fas fa-search me-2"></i>SEO-редактор
+                            </a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                            <a class="dropdown-item" href="/admin/theme">
+                                <i class="fas fa-palette me-2"></i>Редактор темы
+                            </a>
+                        </li>
+                    <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                        <a class="dropdown-item" href="/admin/users">
+                            <i class="fas fa-users me-2"></i>Управление пользователями
+                        </a>
+                    </li>
+                    <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                        <a class="dropdown-item" href="/admin/categories">
+                            <i class="fas fa-list me-2"></i>Управление категориями
+                        </a>
+                    </li>
+                        <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                            <a class="dropdown-item" href="/admin/banners">
+                                <i class="fas fa-image me-2"></i>Баннеры
+                            </a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                            <a class="dropdown-item" href="/admin/premium-pricing">
+                                <i class="fas fa-euro-sign me-2"></i>Цены премиум
+                            </a>
+                        </li>
+                        <li sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN')">
+                            <a class="dropdown-item position-relative" href="/admin/updates" id="updatesMenuItem">
+                                <i class="fas fa-sync-alt me-2"></i>Обновления
+                                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" 
+                                      id="newVersionBadge"
+                                      style="font-size: 0.6rem; padding: 0.2rem 0.4rem; display: none;">!</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <script>
+        // Проверка непрочитанных сообщений для бейджа в меню
+        document.addEventListener('DOMContentLoaded', function() {
+            const badge = document.getElementById('unreadMessagesBadge');
+            if (badge) {
+                fetch('/messages/api/unread-count')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.style.display = 'inline-block';
+                        }
+                    })
+                    .catch(err => {
+                        // Игнорируем ошибки, если таблица еще не создана
+                        console.debug('Messages service not available yet');
+                    });
+            }
+            
+            // Проверка новой версии для админов
+            const updatesMenuItem = document.getElementById('updatesMenuItem');
+            const newVersionBadge = document.getElementById('newVersionBadge');
+            if (updatesMenuItem && newVersionBadge) {
+                fetch('/admin/updates/api/check')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.hasNewVersion) {
+                            newVersionBadge.style.display = 'inline-block';
+                            newVersionBadge.title = 'Доступна новая версия: ' + data.newVersion;
+                        }
+                    })
+                    .catch(err => {
+                        // Игнорируем ошибки, если пользователь не админ или сервис недоступен
+                        console.debug('Update check not available');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
+

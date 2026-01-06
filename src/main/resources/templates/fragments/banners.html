@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Top Banners Fragment -->
+    <div th:fragment="top-banners" th:if="${topBanners != null and !#lists.isEmpty(topBanners)}" class="banner-container">
+        <div th:each="banner : ${topBanners}" class="mb-3">
+            <a th:href="${banner.linkUrl != null ? banner.linkUrl : '#'}" 
+               th:onclick="${'bannerService.incrementBannerClicks(' + banner.id + ')'}"
+               target="_blank">
+                <img th:src="${banner.imageUrl}" 
+                     th:alt="${banner.title}"
+                     class="img-fluid w-100"
+                     style="max-height: 200px; object-fit: cover; border-radius: 8px;">
+            </a>
+        </div>
+    </div>
+    
+    <!-- Sidebar Banners Fragment -->
+    <div th:fragment="sidebar-banners" th:if="${sidebarBanners != null and !#lists.isEmpty(sidebarBanners)}" class="banner-container">
+        <div th:each="banner : ${sidebarBanners}" class="mb-3">
+            <a th:href="${banner.linkUrl != null ? banner.linkUrl : '#'}" 
+               th:onclick="${'bannerService.incrementBannerClicks(' + banner.id + ')'}"
+               target="_blank">
+                <img th:src="${banner.imageUrl}" 
+                     th:alt="${banner.title}"
+                     class="img-fluid w-100"
+                     style="max-height: 300px; object-fit: cover; border-radius: 8px;">
+            </a>
+        </div>
+    </div>
+    
+    <!-- Bottom Banners Fragment -->
+    <div th:fragment="bottom-banners" th:if="${bottomBanners != null and !#lists.isEmpty(bottomBanners)}" class="banner-container">
+        <div th:each="banner : ${bottomBanners}" class="mb-3">
+            <a th:href="${banner.linkUrl != null ? banner.linkUrl : '#'}" 
+               th:onclick="${'bannerService.incrementBannerClicks(' + banner.id + ')'}"
+               target="_blank">
+                <img th:src="${banner.imageUrl}" 
+                     th:alt="${banner.title}"
+                     class="img-fluid w-100"
+                     style="max-height: 150px; object-fit: cover; border-radius: 8px;">
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
+

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isOwnProfile ? 'Мой профиль - ruomi.fi' : user.username + ' - Профиль - ruomi.fi'}">Профиль - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dynamic Theme CSS -->
+    <link rel="stylesheet" th:href="@{/theme/css}">
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <!-- Notification Bar -->
+    <div th:replace="~{fragments/notifications :: notification-bar}"></div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-user-circle me-2"></i><span th:text="${isOwnProfile ? 'Профиль' : 'Информация'}">Профиль</span>
+                        </h5>
+                        <ul class="nav nav-pills flex-column" th:if="${isOwnProfile}">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#profile" data-bs-toggle="pill">
+                                    <i class="fas fa-user me-2"></i>Основная информация
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#telegram" data-bs-toggle="pill">
+                                    <i class="fab fa-telegram me-2"></i>Telegram
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#security" data-bs-toggle="pill">
+                                    <i class="fas fa-shield-alt me-2"></i>Безопасность
+                                </a>
+                            </li>
+                        </ul>
+                        <div th:if="${!isOwnProfile}" class="text-center">
+                            <p class="text-muted">Просмотр профиля другого пользователя</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="tab-content">
+                    <!-- Profile Information -->
+                    <div class="tab-pane fade show active" id="profile">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user me-2"></i>Основная информация
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Avatar Display/Upload -->
+                                <div class="text-center mb-4">
+                                    <img th:src="${user.avatarUrl != null and !user.avatarUrl.isEmpty() ? '/files/' + user.avatarUrl : 'https://ui-avatars.com/api/?name=' + #strings.replace(user.username, ' ', '+') + '&size=120&background=667eea&color=fff'}" 
+                                         class="rounded-circle mb-3" 
+                                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #667eea;"
+                                         th:alt="${user.username}"
+                                         onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&size=120&background=667eea&color=fff'">
+                                    <form th:if="${isOwnProfile}" th:action="@{/profile/upload-avatar}" method="post" enctype="multipart/form-data" class="d-inline">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                        <input type="file" name="avatar" accept="image/*" id="avatarInput" style="display: none;" onchange="this.form.submit()">
+                                        <label for="avatarInput" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-camera me-1"></i>Изменить аватар
+                                        </label>
+                                    </form>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Имя пользователя</label>
+                                            <input type="text" class="form-control" th:value="${user.username}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" th:value="${user.email}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Имя</label>
+                                            <input type="text" class="form-control" th:value="${user.firstName}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Фамилия</label>
+                                            <input type="text" class="form-control" th:value="${user.lastName}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Телефон</label>
+                                            <input type="tel" class="form-control" th:value="${user.phone != null ? user.phone : 'Не указан'}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Дата регистрации</label>
+                                            <input type="text" class="form-control" th:value="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Количество объявлений</label>
+                                            <input type="text" class="form-control" th:value="${user.advertisementsCount != null ? user.advertisementsCount : 0}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Telegram Settings -->
+                    <div class="tab-pane fade" id="telegram" th:if="${isOwnProfile}">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fab fa-telegram me-2"></i>Настройки Telegram
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6>Связывание с Telegram</h6>
+                                        <p class="text-muted">
+                                            Свяжите ваш аккаунт с Telegram для быстрого входа и получения уведомлений.
+                                        </p>
+                                        
+                                        <!-- Telegram Status -->
+                                        <div id="telegram-status" class="mb-3">
+                                            <div class="alert alert-info">
+                                                <i class="fab fa-telegram me-2"></i>
+                                                <strong>Статус:</strong> 
+                                                <span id="telegram-status-text">Не связан</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Link/Unlink Buttons -->
+                                        <div id="telegram-actions">
+                                            <button type="button" class="btn btn-primary" id="link-telegram-btn">
+                                                <i class="fab fa-telegram me-2"></i>Связать с Telegram
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" id="unlink-telegram-btn" style="display: none;">
+                                                <i class="fas fa-unlink me-2"></i>Отвязать Telegram
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div id="telegram-login-widget-small"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Security Settings -->
+                    <div class="tab-pane fade" id="security" th:if="${isOwnProfile}">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-shield-alt me-2"></i>Безопасность
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <h6>Смена пароля</h6>
+                                <form id="change-password-form">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="current-password" class="form-label">Текущий пароль</label>
+                                                <input type="password" class="form-control" id="current-password" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="new-password" class="form-label">Новый пароль</label>
+                                                <input type="password" class="form-control" id="new-password" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="confirm-password" class="form-label">Подтвердите пароль</label>
+                                                <input type="password" class="form-control" id="confirm-password" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-key me-2"></i>Изменить пароль
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Telegram Login Widget Script -->
+    <script async src="https://telegram.org/js/telegram-widget.js?22" 
+            th:attr="data-telegram-login=${@environment.getProperty('telegram.login.widget.bot.username','ruomi_bot')},
+                     data-auth-url=${@environment.getProperty('telegram.login.widget.auth-url','http://localhost:8080/auth/telegram/callback')}"
+            data-size="medium" 
+            data-request-access="write"
+            data-onauth="onTelegramAuth(user)"></script>
+    
+    <script>
+        // Handle Telegram login for linking
+        function onTelegramAuth(user) {
+            console.log('Telegram auth for linking:', user);
+            
+            // Link the Telegram account
+            linkTelegramAccount(user);
+        }
+        
+        function linkTelegramAccount(telegramData) {
+            fetch('/profile/link-telegram', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `telegramId=${telegramData.id}&telegramUsername=${telegramData.username}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateTelegramStatus(true, telegramData.username);
+                    alert('Telegram аккаунт успешно связан!');
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при связывании аккаунта');
+            });
+        }
+        
+        function unlinkTelegramAccount() {
+            if (confirm('Вы уверены, что хотите отвязать Telegram аккаунт?')) {
+                fetch('/profile/unlink-telegram', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateTelegramStatus(false);
+                        alert('Telegram аккаунт успешно отвязан!');
+                    } else {
+                        alert('Ошибка: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Произошла ошибка при отвязывании аккаунта');
+                });
+            }
+        }
+        
+        function updateTelegramStatus(isLinked, username = null) {
+            const statusText = document.getElementById('telegram-status-text');
+            const linkBtn = document.getElementById('link-telegram-btn');
+            const unlinkBtn = document.getElementById('unlink-telegram-btn');
+            
+            if (isLinked) {
+                statusText.textContent = `Связан с @${username}`;
+                statusText.className = 'text-success';
+                linkBtn.style.display = 'none';
+                unlinkBtn.style.display = 'inline-block';
+            } else {
+                statusText.textContent = 'Не связан';
+                statusText.className = 'text-muted';
+                linkBtn.style.display = 'inline-block';
+                unlinkBtn.style.display = 'none';
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('unlink-telegram-btn').addEventListener('click', unlinkTelegramAccount);
+        
+        // Change password form
+        document.getElementById('change-password-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Пароли не совпадают');
+                return;
+            }
+            
+            // Here you would implement password change logic
+            alert('Функция смены пароля будет реализована позже');
+        });
+        
+        // Check Telegram status on page load
+        // In a real implementation, you would fetch this from the server
+        // For now, we'll assume it's not linked
+        updateTelegramStatus(false);
+    </script>
+</body>
+</html>
+
+
+

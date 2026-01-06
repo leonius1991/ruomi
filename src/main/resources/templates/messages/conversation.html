@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'Диалог с ' + otherUser.firstName}">Диалог - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/theme/css}">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+</head>
+<body class="bg-light">
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <!-- Notification Bar -->
+    <div th:replace="~{fragments/notifications :: notification-bar}"></div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" th:text="${otherUser.firstName + ' ' + otherUser.lastName}">Пользователь</h5>
+                        <a th:href="@{/messages}" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left"></i> Назад
+                        </a>
+                    </div>
+                    <div class="card-body" style="height: 500px; overflow-y: auto;" id="messagesContainer">
+                        <div th:each="msg : ${messages}" 
+                             class="mb-3"
+                             th:classappend="${msg.sender.id == #authentication.principal.id} ? 'text-end' : 'text-start'">
+                            <div class="d-inline-block p-3 rounded" 
+                                 th:classappend="${msg.sender.id == #authentication.principal.id} ? 'bg-primary text-white' : 'bg-light'"
+                                 style="max-width: 70%;">
+                                <p class="mb-1" th:text="${msg.content}">Сообщение</p>
+                                <small th:text="${#temporals.format(msg.sentAt, 'dd.MM.yyyy HH:mm')}">Дата</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <form id="messageForm" th:action="@{/messages/send}" method="post">
+                            <input type="hidden" name="recipientId" th:value="${otherUser.id}">
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary" type="button" id="emojiBtn" title="Смайлики">
+                                    <i class="fas fa-smile"></i>
+                                </button>
+                                <input type="text" class="form-control" name="content" id="messageContent" 
+                                       placeholder="Введите сообщение..." required>
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-paper-plane"></i> Отправить
+                                </button>
+                            </div>
+                            <div id="emojiPicker" class="position-absolute bg-white border rounded p-2 shadow" 
+                                 style="display: none; z-index: 1000; max-width: 300px;">
+                                <div class="d-flex flex-wrap" id="emojiContainer"></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Emoji picker
+        const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
+        
+        document.getElementById('emojiBtn').addEventListener('click', function() {
+            const picker = document.getElementById('emojiPicker');
+            if (picker.style.display === 'none') {
+                picker.style.display = 'block';
+                const container = document.getElementById('emojiContainer');
+                if (container.children.length === 0) {
+                    emojis.forEach(emoji => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'btn btn-sm m-1';
+                        btn.textContent = emoji;
+                        btn.style.fontSize = '1.5rem';
+                        btn.onclick = () => {
+                            document.getElementById('messageContent').value += emoji;
+                            picker.style.display = 'none';
+                        };
+                        container.appendChild(btn);
+                    });
+                }
+            } else {
+                picker.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/messages/send', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'success') {
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + data);
+                }
+            });
+        });
+        
+        // Прокрутка вниз при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        });
+    </script>
+</body>
+</html>
+

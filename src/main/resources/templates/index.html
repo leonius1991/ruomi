@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">ruomi.fi - Доска объявлений для русскоязычного населения в Финляндии</title>
+    <meta name="description" th:attr="content=${metaDescription}" content="ruomi.fi — современная доска объявлений для русскоязычных жителей Финляндии.">
+    <meta name="keywords" th:attr="content=${metaKeywords}" content="ruomi, объявления, финляндия, русскоязычные">
+    <meta name="description" content="Современная доска объявлений для русскоязычного населения в Финляндии. Размещайте и находите объявления о недвижимости, транспорте, услугах и многом другом.">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dynamic Theme CSS -->
+    <link rel="stylesheet" th:href="@{/theme/css}">
+</head>
+<body>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <!-- Notification Bar -->
+    <div th:replace="~{fragments/notifications :: notification-bar}"></div>
+
+    <!-- Top Banners -->
+    <div th:replace="~{fragments/banners :: top-banners}"></div>
+    
+    <!-- Category Ribbon -->
+    <section class="category-ribbon bg-white py-2 shadow-sm" style="border-bottom: 1px solid #e9ecef;">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-center" style="gap: 0.5rem;">
+                <div class="dropdown category-chip" th:each="menu : ${categoryMenus}">
+                    <button class="btn btn-outline-primary dropdown-toggle btn-sm text-uppercase" style="font-size: 0.85rem; font-weight: 400; min-width: 140px;"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fa-solid" th:classappend="${' ' + menu.icon()}"></i>
+                        <span th:text="${menu.label()}">Категория</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item fw-semibold"
+                               th:href="@{/advertisements(category=${menu.categoryParam()})}">
+                                Все объявления
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li th:if="${#lists.isEmpty(menu.subcategories())}">
+                            <span class="dropdown-item text-muted">Подкатегории появятся позже</span>
+                        </li>
+                        <li th:each="sub : ${menu.subcategories()}">
+                            <a class="dropdown-item"
+                               th:href="${sub.link()}"
+                               th:text="${sub.label()}">Подкатегория</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-white text-center py-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h1 class="h2 fw-light mb-3" style="font-size: 2rem;">
+                        Добро пожаловать на ruomi.fi
+                    </h1>
+                    <p class="mb-4" style="font-size: 1rem; opacity: 0.9;">
+                        Современная доска объявлений для русскоязычного населения в Финляндии. 
+                        Размещайте объявления, находите нужные товары и услуги.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="/advertisements" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>Найти объявления
+                        </a>
+                        <a href="/create-advertisement" class="btn btn-outline-light btn-lg" sec:authorize="isAuthenticated()">
+                            <i class="fas fa-plus me-2"></i>Разместить объявление
+                        </a>
+                        <a href="/register" class="btn btn-outline-light btn-lg" sec:authorize="isAnonymous()">
+                            <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-4 bg-light">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-4 mb-3">
+                    <div class="stat-card" style="padding: 1.5rem 1rem;">
+                        <i class="fas fa-bullhorn text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h4 class="mb-1 fw-light" style="font-size: 1.75rem;" th:text="${totalAdvertisements}">0</h4>
+                        <p class="text-muted small mb-0">Активных объявлений</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="stat-card" style="padding: 1.5rem 1rem;">
+                        <i class="fas fa-users text-success mb-2" style="font-size: 2rem;"></i>
+                        <h4 class="mb-1 fw-light" style="font-size: 1.75rem;" th:text="${totalUsers}">0</h4>
+                        <p class="text-muted small mb-0">Пользователей</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="stat-card" style="padding: 1.5rem 1rem;">
+                        <i class="fas fa-map-marker-alt text-info mb-2" style="font-size: 2rem;"></i>
+                        <h4 class="mb-1 fw-light" style="font-size: 1.75rem;">50+</h4>
+                        <p class="text-muted small mb-0">Городов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Premium Advertisements -->
+    <section class="py-4" th:if="${not #lists.isEmpty(premiumAdvertisements)}">
+        <div class="container">
+                <h3 class="text-center mb-4" style="font-size: 1.5rem; font-weight: 300;">
+                <i class="fas fa-star text-warning me-2"></i>
+                Премиум объявления
+            </h3>
+            <div class="row g-3">
+                <div class="col-lg-4 col-md-6" th:each="ad : ${premiumAdvertisements}">
+                    <div class="card h-100 shadow-sm" style="border-radius: 16px; border: 2px solid #ffc107; background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(255,193,7,0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+                        <div class="card-body" style="padding: 1.5rem;">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem; padding: 0.4rem 0.7rem;">
+                                    <i class="fas fa-star me-1"></i>Премиум
+                                </span>
+                                <small class="text-muted" style="font-size: 0.75rem;" th:text="${#temporals.format(ad.createdAt, 'dd.MM')}">01.01</small>
+                            </div>
+                            <h6 class="card-title mb-2 fw-semibold" style="font-size: 1rem; line-height: 1.4; min-height: 2.8rem;" th:text="${ad.title}">Заголовок</h6>
+                            <p class="card-text text-muted mb-3" style="font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2;" th:text="${T(fi.newdoska.doska.util.TextUtils).abbreviate(ad.description, 90)}">Описание...</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="h6 text-primary mb-0 fw-bold" style="font-size: 1.15rem;" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                                <span class="text-muted small" style="font-size: 0.8rem;" th:if="${ad.price == null}">Цена не указана</span>
+                                <small class="text-muted d-flex align-items-center" style="font-size: 0.75rem;">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    <span th:text="${ad.city}">Хельсинки</span>
+                                </small>
+                            </div>
+                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="btn btn-warning btn-sm w-100 fw-bold" style="font-size: 0.85rem; border-radius: 8px;">
+                                <i class="fas fa-arrow-right me-1"></i>Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Urgent Advertisements -->
+    <section class="py-4 bg-light" th:if="${not #lists.isEmpty(urgentAdvertisements)}">
+        <div class="container">
+            <h3 class="text-center mb-4" style="font-size: 1.5rem; font-weight: 300;">
+                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                Срочные объявления
+            </h3>
+            <div class="row g-3">
+                <div class="col-lg-4 col-md-6" th:each="ad : ${urgentAdvertisements}">
+                    <div class="card h-100 shadow-sm" style="border-radius: 16px; border-left: 4px solid #dc3545; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(220,53,69,0.2)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+                        <div class="card-body" style="padding: 1.5rem;">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-danger" style="font-size: 0.7rem; padding: 0.4rem 0.7rem;">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Срочно
+                                </span>
+                                <small class="text-muted" style="font-size: 0.75rem;" th:text="${#temporals.format(ad.createdAt, 'dd.MM')}">01.01</small>
+                            </div>
+                            <h6 class="card-title mb-2 fw-semibold" style="font-size: 1rem; line-height: 1.4; min-height: 2.8rem;" th:text="${ad.title}">Заголовок</h6>
+                            <p class="card-text text-muted mb-3" style="font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2;" th:text="${T(fi.newdoska.doska.util.TextUtils).abbreviate(ad.description, 90)}">Описание...</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="h6 text-primary mb-0 fw-bold" style="font-size: 1.15rem;" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                                <span class="text-muted small" style="font-size: 0.8rem;" th:if="${ad.price == null}">Цена не указана</span>
+                                <small class="text-muted d-flex align-items-center" style="font-size: 0.75rem;">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    <span th:text="${ad.city}">Хельсинки</span>
+                                </small>
+                            </div>
+                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="btn btn-danger btn-sm w-100" style="font-size: 0.85rem; border-radius: 8px;">
+                                <i class="fas fa-arrow-right me-1"></i>Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Advertisements -->
+    <section class="py-4">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0" style="font-size: 1.5rem; font-weight: 300;">
+                    <i class="fas fa-clock text-info me-2"></i>
+                    Последние объявления
+                </h3>
+                <a href="/advertisements" class="btn btn-outline-primary btn-sm" style="font-size: 0.9rem;">
+                    Все объявления <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6" th:each="ad : ${latestAdvertisements}">
+                    <div class="card h-100 shadow-sm" style="border-radius: 16px; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+                        <div class="card-body" style="padding: 1.5rem;">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-dark" style="font-size: 0.65rem; padding: 0.3rem 0.6rem;" th:text="${ad.category.getDisplayName()}">Категория</span>
+                            </div>
+                            <h6 class="card-title mb-2 fw-semibold" style="font-size: 0.95rem; line-height: 1.4; min-height: 2.6rem;" th:text="${ad.title}">Заголовок</h6>
+                            <p class="card-text text-muted mb-3" style="font-size: 0.8rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2;" th:text="${T(fi.newdoska.doska.util.TextUtils).abbreviate(ad.description, 75)}">Описание...</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-primary fw-bold" style="font-size: 1rem;" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                                <span class="text-muted" style="font-size: 0.75rem;" th:if="${ad.price == null}">Цена не указана</span>
+                                <small class="text-muted d-flex align-items-center" style="font-size: 0.7rem;">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    <span th:text="${ad.city}">Хельсинки</span>
+                                </small>
+                            </div>
+                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="btn btn-outline-primary btn-sm w-100" style="font-size: 0.8rem; border-radius: 8px;">
+                                <i class="fas fa-eye me-1"></i>Смотреть
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Telegram Bot Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="mb-4">
+                        <i class="fab fa-telegram me-3"></i>
+                        ruomi.fi Telegram Bot
+                    </h2>
+                    <p class="lead mb-4">
+                        Используйте наш Telegram бот для быстрого доступа к объявлениям! 
+                        Просматривайте, создавайте и управляйте объявлениями прямо из Telegram.
+                    </p>
+                    <div class="mb-4">
+                        <h5><i class="fas fa-check-circle me-2"></i>Возможности бота:</h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right me-2"></i>Просмотр последних объявлений</li>
+                            <li><i class="fas fa-arrow-right me-2"></i>Создание новых объявлений</li>
+                            <li><i class="fas fa-arrow-right me-2"></i>Поиск по категориям</li>
+                            <li><i class="fas fa-arrow-right me-2"></i>Управление своими объявлениями</li>
+                            <li><i class="fas fa-arrow-right me-2"></i>Уведомления о новых объявлениях</li>
+                        </ul>
+                    </div>
+                    <a href="https://t.me/newdoska_bot" class="btn btn-light btn-lg" target="_blank">
+                        <i class="fab fa-telegram me-2"></i>
+                        Открыть в Telegram
+                    </a>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="telegram-preview">
+                        <div class="card bg-dark text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fab fa-telegram fa-2x text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0 text-uppercase">ruomi.fi Bot</h6>
+                                        <small class="text-muted">@ruomi_bot</small>
+                                    </div>
+                                </div>
+                                <div class="message-preview">
+                                    <p class="mb-2">🎉 Добро пожаловать в ruomi.fi Bot!</p>
+                                    <p class="mb-2">Выберите действие:</p>
+                                    <div class="btn-group-vertical w-100">
+                                        <button class="btn btn-outline-primary btn-sm mb-1">📋 Просмотреть объявления</button>
+                                        <button class="btn btn-outline-primary btn-sm mb-1">➕ Добавить объявление</button>
+                                        <button class="btn btn-outline-primary btn-sm mb-1">🔍 Поиск</button>
+                                        <button class="btn btn-outline-primary btn-sm">📊 Мои объявления</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h3 class="text-center mb-4" style="font-size: 1.5rem; font-weight: 300;">Почему выбирают ruomi.fi?</h3>
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4 text-center">
+                    <div class="feature-card">
+                        <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                        <h5>Мобильная версия</h5>
+                        <p class="text-muted">Удобно использовать на любых устройствах</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 text-center">
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                        <h5>Безопасность</h5>
+                        <p class="text-muted">Защищенные транзакции и проверенные пользователи</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 text-center">
+                    <div class="feature-card">
+                        <i class="fas fa-globe fa-3x text-info mb-3"></i>
+                        <h5>Русскоязычная поддержка</h5>
+                        <p class="text-muted">Полная поддержка на русском языке</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 text-center">
+                    <div class="feature-card">
+                        <i class="fas fa-rocket fa-3x text-warning mb-3"></i>
+                        <h5>Быстро и удобно</h5>
+                        <p class="text-muted">Размещайте объявления за несколько минут</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5 class="mb-3 text-uppercase">
+                        <i class="fas fa-bullhorn me-2"></i>ruomi.fi
+                    </h5>
+                    <p class="text-muted">
+                        Современная доска объявлений для русскоязычного населения в Финляндии. 
+                        Мы помогаем людям находить друг друга и обмениваться товарами и услугами.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-vk"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="mb-3">Категории</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/advertisements?category=REAL_ESTATE" class="text-muted text-decoration-none">Недвижимость</a></li>
+                        <li><a href="/advertisements?category=VEHICLES" class="text-muted text-decoration-none">Транспорт</a></li>
+                        <li><a href="/advertisements?category=ELECTRONICS" class="text-muted text-decoration-none">Электроника</a></li>
+                        <li><a href="/advertisements?category=SERVICES" class="text-muted text-decoration-none">Услуги</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h6 class="mb-3">Информация</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="/about" class="text-muted text-decoration-none">О нас</a></li>
+                        <li><a href="/contact" class="text-muted text-decoration-none">Контакты</a></li>
+                        <li><a href="/help" class="text-muted text-decoration-none">Помощь</a></li>
+                        <li><a href="/terms" class="text-muted text-decoration-none">Условия использования</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h6 class="mb-3">Подписка на новости</h6>
+                    <p class="text-muted">Получайте уведомления о новых объявлениях в интересующих вас категориях</p>
+                    <form class="d-flex">
+                        <input type="email" class="form-control me-2" placeholder="Ваш email">
+                        <button type="submit" class="btn btn-primary">Подписаться</button>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted text-uppercase">&copy; 2024 ruomi.fi. Все права защищены.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-muted">Сделано с <i class="fas fa-heart text-danger"></i> в Финляндии</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html> 

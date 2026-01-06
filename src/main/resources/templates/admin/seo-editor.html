@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO-редактор - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dynamic Theme CSS -->
+    <link rel="stylesheet" th:href="@{/theme/css}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand text-uppercase" href="/">ruomi.fi</a>
+        <div class="collapse navbar-collapse">
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/theme">Редактор темы</a>
+                <a class="nav-link" href="/admin/users">Пользователи</a>
+                <a class="nav-link" href="/moderator/dashboard">Кабинет</a>
+                <a class="nav-link" href="/" target="_blank">На сайт</a>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="nav-link border-0 bg-transparent text-white">Выйти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-4">
+    <h2 class="mb-4"><i class="fas fa-search me-2"></i>SEO-редактор</h2>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Редактировать метаданные</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/seo}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Ключ страницы (pageKey)</label>
+                            <input type="text" name="pageKey" class="form-control" 
+                                   placeholder="home, category:JOBS, search" required>
+                            <small class="text-muted">Примеры: home, category:JOBS, search</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Заголовок (Title)</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Описание (Description)</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ключевые слова (Keywords)</label>
+                            <input type="text" name="keywords" class="form-control" 
+                                   placeholder="ключевое слово 1, ключевое слово 2">
+                        </div>
+                        <input type="hidden" name="id" value="">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Сохранить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Предпросмотр сниппета</h5>
+                </div>
+                <div class="card-body">
+                    <div class="search-result-preview">
+                        <div class="preview-title text-primary mb-1" id="previewTitle">Заголовок страницы</div>
+                        <div class="preview-url text-success small mb-1">https://ruomi.fi/...</div>
+                        <div class="preview-description text-muted small" id="previewDescription">
+                            Описание страницы для поисковых систем...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Существующие метаданные</h5>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Ключ</th>
+                            <th>Заголовок</th>
+                            <th>Описание</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="meta : ${metadataList}">
+                            <td th:text="${meta.pageKey}">pageKey</td>
+                            <td th:text="${meta.title}">Title</td>
+                            <td th:text="${#strings.abbreviate(meta.description, 50)}">Description</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" 
+                                        th:onclick="'editMeta(' + ${meta.id} + ')'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelector('input[name="title"]').addEventListener('input', function() {
+        document.getElementById('previewTitle').textContent = this.value || 'Заголовок страницы';
+    });
+    document.querySelector('textarea[name="description"]').addEventListener('input', function() {
+        document.getElementById('previewDescription').textContent = this.value || 'Описание страницы...';
+    });
+</script>
+</body>
+</html>
+

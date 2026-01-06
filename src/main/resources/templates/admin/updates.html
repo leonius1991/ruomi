@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обновления приложения - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/theme/css}">
+    <style>
+        .version-card {
+            transition: transform 0.2s;
+        }
+        .version-card:hover {
+            transform: translateY(-2px);
+        }
+        .update-progress {
+            display: none;
+        }
+        .update-progress.active {
+            display: block;
+        }
+        .log-container {
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.error {
+            color: #f48771;
+        }
+        .log-entry.success {
+            color: #89d185;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-sync-alt me-2"></i>Обновления приложения</h2>
+            <button id="checkUpdatesBtn" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Проверить обновления
+            </button>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <!-- Текущая версия -->
+        <div class="card mb-4 version-card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Текущая версия</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Версия:</strong> <span id="currentVersion" th:text="${currentVersion?.version ?: 'Неизвестно'}">-</span></p>
+                        <p class="mb-1"><strong>Дата установки:</strong> 
+                            <span th:if="${currentVersion?.installedAt}" 
+                                  th:text="${#temporals.format(currentVersion.installedAt, 'dd.MM.yyyy HH:mm')}">-</span>
+                            <span th:unless="${currentVersion?.installedAt}">-</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Статус:</strong> 
+                            <span class="badge bg-success" th:if="${currentVersion?.updateStatus == 'SUCCESS'}">Успешно</span>
+                            <span class="badge bg-danger" th:if="${currentVersion?.updateStatus == 'FAILED'}">Ошибка</span>
+                            <span class="badge bg-warning" th:unless="${currentVersion?.updateStatus}">Неизвестно</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Последняя версия на GitHub -->
+        <div class="card mb-4 version-card" th:if="${latestRelease}">
+            <div class="card-header" th:classappend="${hasNewVersion} ? 'bg-warning text-dark' : 'bg-secondary text-white'">
+                <h5 class="mb-0">
+                    <i class="fas fa-github me-2"></i>Последняя версия на GitHub
+                    <span class="badge bg-danger ms-2" th:if="${hasNewVersion}">Новая версия!</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Версия:</strong> <span id="latestVersion" th:text="${latestRelease.version}">-</span></p>
+                        <p class="mb-1"><strong>Тег:</strong> <span th:text="${latestRelease.tagName}">-</span></p>
+                        <p class="mb-1"><strong>Дата публикации:</strong> 
+                            <span th:if="${latestRelease.publishedAt}" th:text="${latestRelease.publishedAt}">-</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <div th:if="${latestRelease.releaseNotes}" class="mb-3">
+                            <strong>Описание:</strong>
+                            <div class="border rounded p-2 mt-2" style="max-height: 150px; overflow-y: auto;">
+                                <span th:utext="${#strings.replace(latestRelease.releaseNotes, T(java.lang.String).valueOf('\n'), '<br>')}"></span>
+                            </div>
+                        </div>
+                        <button id="updateBtn" class="btn btn-success w-100" th:disabled="${!hasNewVersion}">
+                            <i class="fas fa-download me-2"></i>Обновить до версии <span th:text="${latestRelease.version}">-</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4" th:unless="${latestRelease}">
+            <div class="card-body text-center text-muted">
+                <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                <p>Не удалось получить информацию о последней версии. Проверьте настройки GitHub репозитория.</p>
+            </div>
+        </div>
+        
+        <!-- Прогресс обновления -->
+        <div class="card mb-4 update-progress" id="updateProgressCard">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-cog fa-spin me-2"></i>Процесс обновления</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span id="updateStatusText">Инициализация...</span>
+                        <span id="updateProgressPercent">0%</span>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div id="updateProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Логи обновления:</h6>
+                    <div class="log-container" id="updateLogs">
+                        <div class="log-entry">Ожидание начала обновления...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- История версий -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>История версий</h5>
+            </div>
+            <div class="card-body">
+                <div id="releasesList" class="text-center text-muted">
+                    <i class="fas fa-spinner fa-spin"></i> Загрузка...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let updateStatusInterval = null;
+        
+        document.getElementById('checkUpdatesBtn').addEventListener('click', checkUpdates);
+        document.getElementById('updateBtn').addEventListener('click', startUpdate);
+        
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'error' ? 'alert-danger' : 
+                              type === 'success' ? 'alert-success' : 'alert-info';
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+        
+        function checkUpdates() {
+            const btn = document.getElementById('checkUpdatesBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Проверка...';
+            
+            fetch('/admin/updates/api/check')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.hasNewVersion) {
+                            showAlert(`Доступна новая версия: ${data.newVersion}`, 'success');
+                            document.getElementById('latestVersion').textContent = data.newVersion;
+                            document.getElementById('updateBtn').disabled = false;
+                            document.getElementById('updateBtn').innerHTML = 
+                                `<i class="fas fa-download me-2"></i>Обновить до версии ${data.newVersion}`;
+                        } else {
+                            showAlert('У вас установлена последняя версия', 'info');
+                        }
+                    } else {
+                        showAlert('Ошибка при проверке обновлений: ' + (data.error || 'Неизвестная ошибка'), 'error');
+                    }
+                })
+                .catch(error => {
+                    showAlert('Ошибка при проверке обновлений: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-search me-2"></i>Проверить обновления';
+                });
+        }
+        
+        function startUpdate() {
+            if (!confirm('Вы уверены, что хотите обновить приложение? Это действие перезапустит сервер.')) {
+                return;
+            }
+            
+            const btn = document.getElementById('updateBtn');
+            btn.disabled = true;
+            
+            const progressCard = document.getElementById('updateProgressCard');
+            progressCard.classList.add('active');
+            progressCard.scrollIntoView({ behavior: 'smooth' });
+            
+            fetch('/admin/updates/api/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'version': document.getElementById('latestVersion').textContent
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Обновление запущено. Следите за прогрессом ниже.', 'success');
+                    startStatusPolling();
+                } else {
+                    showAlert('Ошибка при запуске обновления: ' + (data.error || 'Неизвестная ошибка'), 'error');
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                showAlert('Ошибка при запуске обновления: ' + error.message, 'error');
+                btn.disabled = false;
+            });
+        }
+        
+        function startStatusPolling() {
+            if (updateStatusInterval) {
+                clearInterval(updateStatusInterval);
+            }
+            
+            updateStatusInterval = setInterval(() => {
+                fetch('/admin/updates/api/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        updateProgressUI(data);
+                        
+                        // Останавливаем опрос, если обновление завершено
+                        if (data.status === 'SUCCESS' || data.status === 'FAILED') {
+                            clearInterval(updateStatusInterval);
+                            updateStatusInterval = null;
+                            
+                            if (data.status === 'SUCCESS') {
+                                setTimeout(() => {
+                                    showAlert('Обновление завершено успешно! Приложение будет перезапущено.', 'success');
+                                }, 1000);
+                            } else {
+                                showAlert('Обновление завершилось с ошибкой. Проверьте логи.', 'error');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при получении статуса обновления:', error);
+                    });
+            }, 1000); // Опрашиваем каждую секунду
+        }
+        
+        function updateProgressUI(progress) {
+            const progressBar = document.getElementById('updateProgressBar');
+            const progressPercent = document.getElementById('updateProgressPercent');
+            const statusText = document.getElementById('updateStatusText');
+            const logsContainer = document.getElementById('updateLogs');
+            
+            progressBar.style.width = progress.progress + '%';
+            progressBar.textContent = progress.progress + '%';
+            progressPercent.textContent = progress.progress + '%';
+            statusText.textContent = progress.message || 'Обновление...';
+            
+            // Обновляем логи
+            if (progress.logs && progress.logs.length > 0) {
+                logsContainer.innerHTML = progress.logs.map(log => {
+                    let className = 'log-entry';
+                    if (log.includes('ОШИБКА') || log.includes('ERROR') || log.includes('КРИТИЧЕСКАЯ')) {
+                        className += ' error';
+                    } else if (log.includes('успешно') || log.includes('SUCCESS')) {
+                        className += ' success';
+                    }
+                    return `<div class="${className}">${escapeHtml(log)}</div>`;
+                }).join('');
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Загружаем список релизов при загрузке страницы
+        fetch('/admin/updates/api/releases')
+            .then(response => response.json())
+            .then(data => {
+                const releasesList = document.getElementById('releasesList');
+                if (data.success && data.releases && data.releases.length > 0) {
+                    releasesList.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Версия</th>
+                                        <th>Тег</th>
+                                        <th>Дата публикации</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.releases.map(release => `
+                                        <tr>
+                                            <td>${release.version}</td>
+                                            <td>${release.tagName}</td>
+                                            <td>${release.publishedAt || '-'}</td>
+                                            <td>
+                                                ${release.isNewer ? 
+                                                    '<span class="badge bg-warning">Новая</span>' : 
+                                                    '<span class="badge bg-secondary">Установлена</span>'}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    releasesList.innerHTML = '<p class="text-muted">История версий недоступна</p>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('releasesList').innerHTML = 
+                    '<p class="text-danger">Ошибка при загрузке истории версий</p>';
+            });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" content="X-CSRF-TOKEN"/>
+    <title th:text="${advertisement != null ? advertisement.title + ' - ruomi.fi' : 'Объявление - ruomi.fi'}">Объявление</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/theme/css}">
+    <style>
+        .ad-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .ad-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .ad-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .ad-image-gallery img {
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        .ad-image-gallery img:hover {
+            transform: scale(1.05);
+        }
+        .user-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <!-- Notification Bar -->
+    <div th:replace="~{fragments/notifications :: notification-bar}"></div>
+
+    <div class="ad-detail-container my-5" th:if="${advertisement != null}">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="ad-header">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="flex-grow-1">
+                            <h1 class="h2 mb-3 fw-light" th:text="${advertisement.title}">Заголовок</h1>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-light text-dark" th:if="${advertisement.premium}">
+                                    <i class="fas fa-star me-1"></i>Премиум
+                                </span>
+                                <span class="badge bg-warning text-dark" th:if="${advertisement.urgent}">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Срочно
+                                </span>
+                                <span class="badge bg-light text-dark" th:text="${advertisement.category.getDisplayName()}">Категория</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <h3 class="mb-0 fw-light" th:if="${advertisement.price != null}" 
+                                th:text="${'€' + advertisement.price}">€100</h3>
+                            <span class="text-white-50" th:if="${advertisement.price == null}">Цена не указана</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="ad-content mb-4">
+                    <!-- Images Gallery -->
+                    <div class="mb-4" th:if="${advertisement.images != null and !#lists.isEmpty(advertisement.images)}">
+                        <h5 class="mb-3"><i class="fas fa-images me-2"></i>Фотографии</h5>
+                        <div class="row g-3 ad-image-gallery">
+                            <div class="col-md-4 col-sm-6" th:each="img : ${advertisement.images}">
+                                <a th:href="@{/files/{fileName}(fileName=${img.fileName})}" data-lightbox="gallery">
+                                    <img th:src="@{/files/{fileName}(fileName=${img.fileName})}" 
+                                         class="img-fluid rounded shadow-sm" 
+                                         style="width: 100%; height: 250px; object-fit: cover; cursor: pointer;">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-align-left me-2"></i>Описание</h5>
+                        <div class="text-muted" style="line-height: 1.8;" th:utext="${advertisement.description}">Описание объявления</div>
+                    </div>
+                    
+                    <!-- Details -->
+                    <div class="row g-3 text-muted small">
+                        <div class="col-md-6">
+                            <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i><strong>Город:</strong> <span th:text="${advertisement.city}">Город</span></p>
+                            <p class="mb-2"><i class="fas fa-calendar me-2 text-primary"></i><strong>Опубликовано:</strong> 
+                                <span th:text="${#temporals.format(advertisement.createdAt, 'dd.MM.yyyy HH:mm')}">Дата</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><i class="fas fa-eye me-2 text-primary"></i><strong>Просмотров:</strong> <span th:text="${advertisement.views}">0</span></p>
+                            <p class="mb-2"><i class="fas fa-tag me-2 text-primary"></i><strong>Тип:</strong> <span th:text="${advertisement.type.getDisplayName()}">Тип</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- User Card -->
+                <div class="user-card mb-4" th:if="${user != null}">
+                    <div class="text-center mb-3">
+                        <img th:src="${user.avatarUrl != null ? '/files/' + user.avatarUrl : '/images/default-avatar.png'}" 
+                             class="user-avatar mb-3" 
+                             alt="Avatar"
+                             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&size=80&background=667eea&color=fff'">
+                        <h5 class="mb-1 user-clickable" 
+                            th:data-user-id="${user.id}"
+                            style="cursor: pointer;"
+                            th:text="${user.username}">Пользователь</h5>
+                        <p class="text-muted small mb-2" th:if="${user.email}" th:text="${user.email}">email</p>
+                        <div class="d-flex justify-content-center gap-3 text-muted small flex-wrap">
+                            <span><i class="fas fa-list me-1"></i><span th:text="${user.advertisementsCount != null ? user.advertisementsCount : 0}">0</span> объявлений</span>
+                            <span><i class="fas fa-calendar me-1"></i><span th:text="${#temporals.format(user.createdAt, 'MM.yyyy')}">Дата</span></span>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-primary btn-sm w-100 user-action-btn" 
+                                    th:data-user-id="${user.id}"
+                                    th:data-action="message"
+                                    sec:authorize="isAuthenticated()"
+                                    th:if="${#authentication.principal.id != user.id}">
+                                <i class="fas fa-envelope me-1"></i>Написать сообщение
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Menu Modal -->
+                <div class="modal fade" id="userMenuModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Действия с пользователем</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center" id="userMenuContent">
+                                <img id="userMenuAvatar" src="" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                <h6 id="userMenuName"></h6>
+                                <div class="d-grid gap-2 mt-3">
+                                    <button class="btn btn-primary" id="btnMessage" onclick="openMessage()">
+                                        <i class="fas fa-envelope me-2"></i>Написать сообщение
+                                    </button>
+                                    <button class="btn btn-outline-primary" id="btnProfile" onclick="openProfile()">
+                                        <i class="fas fa-user me-2"></i>Посмотреть профиль
+                                    </button>
+                                    <button class="btn btn-outline-danger" id="btnReport" onclick="openReport()">
+                                        <i class="fas fa-flag me-2"></i>Пожаловаться
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Report Modal -->
+                <div class="modal fade" id="reportModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Пожаловаться на пользователя</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="reportForm">
+                                    <input type="hidden" id="reportUserId">
+                                    <div class="mb-3">
+                                        <label class="form-label">Причина жалобы</label>
+                                        <select class="form-select" id="reportReason" required>
+                                            <option value="">Выберите причину</option>
+                                            <option value="spam">Спам</option>
+                                            <option value="fraud">Мошенничество</option>
+                                            <option value="inappropriate">Неприемлемое поведение</option>
+                                            <option value="other">Другое</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Описание</label>
+                                        <textarea class="form-control" id="reportDescription" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-danger">Отправить жалобу</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar banners -->
+                <div th:replace="~{fragments/banners :: sidebar-banners}"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container my-5" th:if="${advertisement == null}">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>Объявление не найдено
+        </div>
+        <a href="/advertisements" class="btn btn-primary">Вернуться к объявлениям</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightbox2@2.11.4/dist/js/lightbox.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightbox2@2.11.4/dist/css/lightbox.min.css">
+    
+    <script>
+        let currentUserId = null;
+        
+        // Обработка кликов на пользователя (имя или аватар)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработка кликов на элементы с классом user-clickable
+            document.querySelectorAll('.user-clickable').forEach(element => {
+                element.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    if (userId) {
+                        showUserMenu(userId);
+                    }
+                });
+            });
+            
+            // Обработка кликов на кнопки с классом user-action-btn
+            document.querySelectorAll('.user-action-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const userId = this.getAttribute('data-user-id');
+                    const action = this.getAttribute('data-action');
+                    if (userId) {
+                        if (action === 'message') {
+                            openMessage(userId);
+                        } else {
+                            showUserMenu(userId);
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Показать меню пользователя
+        function showUserMenu(userId) {
+            currentUserId = userId;
+            fetch('/api/user-menu/info/' + userId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const user = data.user;
+                        document.getElementById('userMenuName').textContent = user.username;
+                        const avatar = document.getElementById('userMenuAvatar');
+                        if (user.avatarUrl && !user.avatarUrl.startsWith('/images/')) {
+                            avatar.src = '/files/' + user.avatarUrl;
+                        } else {
+                            avatar.src = user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&size=80&background=667eea&color=fff';
+                        }
+                        avatar.onerror = function() {
+                            this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username) + '&size=80&background=667eea&color=fff';
+                        };
+                        
+                        // Показать/скрыть кнопку сообщения
+                        const btnMessage = document.getElementById('btnMessage');
+                        if (data.canMessage) {
+                            btnMessage.style.display = 'block';
+                        } else {
+                            btnMessage.style.display = 'none';
+                        }
+                        
+                        // Показать модальное окно
+                        const modal = new bootstrap.Modal(document.getElementById('userMenuModal'));
+                        modal.show();
+                    } else {
+                        alert('Ошибка: ' + (data.error || 'Не удалось загрузить информацию о пользователе'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при загрузке информации о пользователе');
+                });
+        }
+        
+        // Открыть сообщение
+        function openMessage(userId) {
+            if (userId) {
+                window.location.href = '/messages/conversation/' + userId;
+            } else if (currentUserId) {
+                window.location.href = '/messages/conversation/' + currentUserId;
+            }
+        }
+        
+        // Открыть профиль
+        function openProfile() {
+            if (currentUserId) {
+                window.location.href = '/profile/' + currentUserId;
+            }
+        }
+        
+        // Открыть форму жалобы
+        function openReport() {
+            if (currentUserId) {
+                const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+                modal.show();
+            }
+        }
+        
+        // Отправка жалобы
+        document.getElementById('reportForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('userId', currentUserId);
+            
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+            
+            fetch('/api/user-menu/report', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    [csrfHeader]: csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Жалоба отправлена');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+                    modal.hide();
+                    this.reset();
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Не удалось отправить жалобу'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка при отправке жалобы');
+            });
+        });
+    </script>
+</body>
+</html>

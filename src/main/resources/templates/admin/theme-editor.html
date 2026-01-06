@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор темы - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dynamic Theme CSS -->
+    <link rel="stylesheet" th:href="@{/theme/css}">
+    <style>
+        .color-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand text-uppercase" href="/">ruomi.fi</a>
+        <div class="collapse navbar-collapse">
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/seo">SEO-редактор</a>
+                <a class="nav-link" href="/admin/users">Пользователи</a>
+                <a class="nav-link" href="/moderator/dashboard">Кабинет</a>
+                <a class="nav-link" href="/" target="_blank">На сайт</a>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="nav-link border-0 bg-transparent text-white">Выйти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-4">
+    <h2 class="mb-4"><i class="fas fa-palette me-2"></i>Редактор цветов темы</h2>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Цвета сайта</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/theme}" method="post" th:object="${theme}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label class="form-label">Основной цвет (Primary)</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewPrimary" 
+                                     th:style="'background-color: ' + ${theme.primaryColor}"></div>
+                                <input type="color" name="primaryColor" class="form-control form-control-color" 
+                                       th:value="${theme.primaryColor}" 
+                                       onchange="updatePreview('previewPrimary', this.value)">
+                                <input type="text" class="form-control ms-2" 
+                                       th:value="${theme.primaryColor}" 
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Вторичный цвет (Secondary)</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewSecondary"
+                                     th:style="'background-color: ' + ${theme.secondaryColor}"></div>
+                                <input type="color" name="secondaryColor" class="form-control form-control-color"
+                                       th:value="${theme.secondaryColor}"
+                                       onchange="updatePreview('previewSecondary', this.value)">
+                                <input type="text" class="form-control ms-2"
+                                       th:value="${theme.secondaryColor}"
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Цвет успеха (Success)</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewSuccess"
+                                     th:style="'background-color: ' + ${theme.successColor}"></div>
+                                <input type="color" name="successColor" class="form-control form-control-color"
+                                       th:value="${theme.successColor}"
+                                       onchange="updatePreview('previewSuccess', this.value)">
+                                <input type="text" class="form-control ms-2"
+                                       th:value="${theme.successColor}"
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Цвет опасности (Danger)</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewDanger"
+                                     th:style="'background-color: ' + ${theme.dangerColor}"></div>
+                                <input type="color" name="dangerColor" class="form-control form-control-color"
+                                       th:value="${theme.dangerColor}"
+                                       onchange="updatePreview('previewDanger', this.value)">
+                                <input type="text" class="form-control ms-2"
+                                       th:value="${theme.dangerColor}"
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Цвет предупреждения (Warning)</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewWarning"
+                                     th:style="'background-color: ' + ${theme.warningColor}"></div>
+                                <input type="color" name="warningColor" class="form-control form-control-color"
+                                       th:value="${theme.warningColor}"
+                                       onchange="updatePreview('previewWarning', this.value)">
+                                <input type="text" class="form-control ms-2"
+                                       th:value="${theme.warningColor}"
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Информационный цвет (Info)</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewInfo"
+                                     th:style="'background-color: ' + ${theme.infoColor}"></div>
+                                <input type="color" name="infoColor" class="form-control form-control-color"
+                                       th:value="${theme.infoColor}"
+                                       onchange="updatePreview('previewInfo', this.value)">
+                                <input type="text" class="form-control ms-2"
+                                       th:value="${theme.infoColor}"
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h5 class="mb-3">Размеры текста</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Базовый размер шрифта</label>
+                            <input type="text" name="baseFontSize" class="form-control" 
+                                   th:value="${theme.baseFontSize}" placeholder="16px">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Размер заголовков</label>
+                            <input type="text" name="headingFontSize" class="form-control" 
+                                   th:value="${theme.headingFontSize}" placeholder="2rem">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Малый размер текста</label>
+                            <input type="text" name="smallFontSize" class="form-control" 
+                                   th:value="${theme.smallFontSize}" placeholder="0.875rem">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Большой размер текста</label>
+                            <input type="text" name="largeFontSize" class="form-control" 
+                                   th:value="${theme.largeFontSize}" placeholder="1.25rem">
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h5 class="mb-3">Дополнительные настройки</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Скругление углов</label>
+                            <input type="text" name="borderRadius" class="form-control" 
+                                   th:value="${theme.borderRadius}" placeholder="0.375rem">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Тень элементов</label>
+                            <input type="text" name="boxShadow" class="form-control" 
+                                   th:value="${theme.boxShadow}" placeholder="0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Высота навигации</label>
+                            <input type="text" name="navbarHeight" class="form-control" 
+                                   th:value="${theme.navbarHeight}" placeholder="56px">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Максимальная ширина контейнера</label>
+                            <input type="text" name="containerMaxWidth" class="form-control" 
+                                   th:value="${theme.containerMaxWidth}" placeholder="1320px">
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h5 class="mb-3">Градиент Hero-секции</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Начальный цвет градиента</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewHeroStart" 
+                                     th:style="'background-color: ' + ${theme.heroGradientStart != null ? theme.heroGradientStart : '#667eea'}"></div>
+                                <input type="color" name="heroGradientStart" class="form-control form-control-color" 
+                                       th:value="${theme.heroGradientStart != null ? theme.heroGradientStart : '#667eea'}" 
+                                       onchange="updatePreview('previewHeroStart', this.value)">
+                                <input type="text" class="form-control ms-2" 
+                                       th:value="${theme.heroGradientStart != null ? theme.heroGradientStart : '#667eea'}" 
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Конечный цвет градиента</label>
+                            <div class="d-flex align-items-center">
+                                <div class="color-preview" id="previewHeroEnd" 
+                                     th:style="'background-color: ' + ${theme.heroGradientEnd != null ? theme.heroGradientEnd : '#764ba2'}"></div>
+                                <input type="color" name="heroGradientEnd" class="form-control form-control-color" 
+                                       th:value="${theme.heroGradientEnd != null ? theme.heroGradientEnd : '#764ba2'}" 
+                                       onchange="updatePreview('previewHeroEnd', this.value)">
+                                <input type="text" class="form-control ms-2" 
+                                       th:value="${theme.heroGradientEnd != null ? theme.heroGradientEnd : '#764ba2'}" 
+                                       onchange="updateColorInput(this.previousElementSibling, this.value)">
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" name="id" th:value="${theme.id}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Сохранить тему
+                        </button>
+                        <a href="/" target="_blank" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-eye me-1"></i>Посмотреть на сайте
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Предпросмотр</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group-vertical w-100 mb-3">
+                        <button class="btn btn-primary">Primary кнопка</button>
+                        <button class="btn btn-secondary">Secondary кнопка</button>
+                        <button class="btn btn-success">Success кнопка</button>
+                        <button class="btn btn-danger">Danger кнопка</button>
+                        <button class="btn btn-warning">Warning кнопка</button>
+                        <button class="btn btn-info">Info кнопка</button>
+                    </div>
+                    <div class="alert alert-primary">Primary alert</div>
+                    <div class="alert alert-success">Success alert</div>
+                    <div class="alert alert-danger">Danger alert</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function updatePreview(elementId, color) {
+        document.getElementById(elementId).style.backgroundColor = color;
+        const textInput = document.getElementById(elementId).nextElementSibling.nextElementSibling;
+        if (textInput) textInput.value = color;
+    }
+    
+    function updateColorInput(colorInput, value) {
+        if (/^#[0-9A-F]{6}$/i.test(value)) {
+            colorInput.value = value;
+            updatePreview(colorInput.previousElementSibling.previousElementSibling.id, value);
+        }
+    }
+</script>
+</body>
+</html>
+

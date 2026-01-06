@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<body>
+    <div th:fragment="notification-bar" sec:authorize="isAuthenticated()" class="position-fixed top-0 start-0 end-0" style="z-index: 1050; margin-top: 56px;">
+        <div id="notificationContainer" class="container-fluid px-3 py-2 bg-primary text-white" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-envelope me-2"></i>
+                    <span id="notificationText">У вас новое сообщение</span>
+                </div>
+                <div>
+                    <a href="/messages" class="btn btn-sm btn-light me-2">Открыть</a>
+                    <button class="btn btn-sm btn-outline-light" onclick="closeNotification()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showNotification(message) {
+            const container = document.getElementById('notificationContainer');
+            const text = document.getElementById('notificationText');
+            if (container && text) {
+                text.textContent = message;
+                container.style.display = 'block';
+                setTimeout(() => {
+                    container.style.opacity = '1';
+                }, 10);
+            }
+        }
+        
+        function closeNotification() {
+            const container = document.getElementById('notificationContainer');
+            if (container) {
+                container.style.display = 'none';
+            }
+        }
+        
+        // Проверка новых сообщений каждые 30 секунд
+        if (document.getElementById('notificationContainer')) {
+            setInterval(function() {
+                fetch('/messages/api/unread-count')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.count > 0) {
+                            showNotification('У вас ' + data.count + ' непрочитанных сообщений');
+                        }
+                    })
+                    .catch(err => console.error('Error checking messages:', err));
+            }, 30000);
+            
+            // Проверка при загрузке страницы
+            fetch('/messages/api/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count > 0) {
+                        showNotification('У вас ' + data.count + ' непрочитанных сообщений');
+                    }
+                })
+                .catch(err => console.error('Error checking messages:', err));
+        }
+    </script>
+</body>
+</html>
+

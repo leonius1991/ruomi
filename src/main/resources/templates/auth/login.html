@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Dynamic Theme CSS -->
+    <link rel="stylesheet" th:href="@{/theme/css}">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h2 class="text-primary text-uppercase">
+                                <i class="fas fa-bullhorn me-2"></i>ruomi.fi
+                            </h2>
+                            <p class="text-muted">Вход в систему</p>
+                        </div>
+                        
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span th:text="${error}">Ошибка</span>
+                        </div>
+                        
+                        <div th:if="${message}" class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span th:text="${message}">Сообщение</span>
+                        </div>
+                        
+                        <!-- Telegram Login Widget -->
+                        <div class="text-center mb-4">
+                            <p class="text-muted small mb-2">Войти одним кликом через Telegram</p>
+                            <div id="telegram-login-widget"></div>
+                        </div>
+                        
+                        <div class="text-center mb-3">
+                            <span class="text-muted">или</span>
+                        </div>
+                        
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Имя пользователя</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Пароль</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me">
+                                <label class="form-check-label" for="remember-me">
+                                    Запомнить меня
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Войти
+                            </button>
+                        </form>
+                        
+                        <div class="text-center">
+                            <a href="/forgot-password" class="text-decoration-none">Забыли пароль?</a>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="text-muted mb-0">Нет аккаунта?</p>
+                            <a href="/register" class="btn btn-outline-primary mt-2">
+                                <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                            </a>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="/" class="text-decoration-none">
+                                <i class="fas fa-arrow-left me-2"></i>Вернуться на главную
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Telegram Login Widget Script -->
+    <script async src="https://telegram.org/js/telegram-widget.js?22" 
+            th:attr="data-telegram-login=${@environment.getProperty('telegram.login.widget.bot.username','ruomi_bot')},
+                     data-auth-url=${@environment.getProperty('telegram.login.widget.auth-url','http://localhost:8080/auth/telegram/callback')}"
+            data-size="large" 
+            data-request-access="write"
+            data-onauth="onTelegramAuth(user)"></script>
+    
+    <script>
+        // Handle Telegram login callback
+        function onTelegramAuth(user) {
+            console.log('Telegram auth success:', user);
+            
+            // Send the user data to our backend
+            fetch('/auth/telegram/callback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(user)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.action === 'login') {
+                        window.location.href = '/';
+                    } else if (data.action === 'register') {
+                        alert('Регистрация через Telegram прошла успешно!');
+                        window.location.href = '/';
+                    } else if (data.action === 'link') {
+                        alert('Ваш аккаунт автоматически связан с Telegram. Добро пожаловать!');
+                        window.location.href = '/';
+                    }
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при авторизации через Telegram');
+            });
+        }
+        
+    </script>
+</body>
+</html> 
