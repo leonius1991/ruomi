@@ -2,6 +2,7 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <script th:replace="~{fragments/theme-init :: head-init}"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" content="X-CSRF-TOKEN"/>
@@ -10,220 +11,147 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/theme/css}">
-    <style>
-        .ad-detail-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .ad-header {
-            background: linear-gradient(110deg, var(--warm-teal, #0E7C66) 0%, var(--warm-green, #2E9E6B) 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 18px;
-            margin-bottom: 2rem;
-        }
-        .ad-content {
-            background: var(--warm-card, #fff);
-            border: 1px solid var(--warm-line, #ECE6DB);
-            border-radius: 18px;
-            padding: 2rem;
-            box-shadow: var(--warm-shadow, 0 8px 24px rgba(31,61,53,0.08));
-        }
-        .ad-image-gallery img {
-            border-radius: 12px;
-            transition: transform 0.3s;
-        }
-        .ad-image-gallery img:hover {
-            transform: scale(1.05);
-        }
-        .user-card {
-            background: var(--warm-cream-2, #f8f9fa);
-            border: 1px solid var(--warm-line, #ECE6DB);
-            border-radius: 18px;
-            padding: 1.5rem;
-        }
-        .user-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--warm-teal, #0E7C66);
-        }
-    </style>
 </head>
 <body>
-    <!-- Navigation -->
     <div th:replace="~{fragments/navbar :: nav}"></div>
-    
-    <!-- Notification Bar -->
     <div th:replace="~{fragments/notifications :: notification-bar}"></div>
 
-    <div class="ad-detail-container my-5" th:if="${advertisement != null}">
-        <div class="row">
+    <main class="container ad-detail-page py-4" th:if="${advertisement != null}">
+        <a href="/advertisements" class="ad-detail-back"><i class="fas fa-arrow-left"></i> Все объявления</a>
+
+        <div class="row g-4">
             <div class="col-lg-8">
-                <!-- Header -->
-                <div class="ad-header">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="flex-grow-1">
-                            <h1 class="h2 mb-3 fw-light" th:text="${advertisement.title}">Заголовок</h1>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <span class="badge bg-light text-dark" th:if="${advertisement.premium}">
-                                    <i class="fas fa-star me-1"></i>Премиум
-                                </span>
-                                <span class="badge bg-warning text-dark" th:if="${advertisement.urgent}">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>Срочно
-                                </span>
-                                <span class="badge bg-light text-dark" th:text="${advertisement.category.getDisplayName()}">Категория</span>
-                            </div>
+                <article class="ad-detail-card">
+                    <!-- Gallery -->
+                    <div class="ad-detail-gallery" th:if="${advertisement.images != null and !#lists.isEmpty(advertisement.images)}">
+                        <div class="ad-detail-gallery-main">
+                            <a th:href="@{/files/{fileName}(fileName=${advertisement.images[0].fileName})}" data-lightbox="gallery" id="adMainImageLink">
+                                <img th:src="@{/files/{fileName}(fileName=${advertisement.images[0].fileName})}"
+                                     id="adMainImage" alt="Фото объявления">
+                            </a>
                         </div>
-                        <div class="text-end">
-                            <h3 class="mb-0 fw-light" th:if="${advertisement.price != null}" 
-                                th:text="${'€' + advertisement.price}">€100</h3>
-                            <span class="text-white-50" th:if="${advertisement.price == null}">Цена не указана</span>
-                            <div class="mt-2" sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN', 'MODERATOR')">
-                                <a th:href="@{/edit-advertisement/{id}(id=${advertisement.id})}" 
-                                   class="btn btn-sm btn-light">
-                                    <i class="fas fa-edit me-1"></i>Редактировать
-                                </a>
-                            </div>
+                        <div class="ad-detail-gallery-thumbs" th:if="${#lists.size(advertisement.images) > 1}">
+                            <img th:each="img, stat : ${advertisement.images}"
+                                 th:src="@{/files/{fileName}(fileName=${img.fileName})}"
+                                 th:attr="data-full=@{/files/{fileName}(fileName=${img.fileName})}"
+                                 th:classappend="${stat.index == 0} ? 'active' : ''"
+                                 alt="Миниатюра"
+                                 onclick="switchAdImage(this)">
                         </div>
                     </div>
-                </div>
-                
-                <!-- Content -->
-                <div class="ad-content mb-4">
-                    <!-- Images Gallery -->
-                    <div class="mb-4" th:if="${advertisement.images != null and !#lists.isEmpty(advertisement.images)}">
-                        <h5 class="mb-3"><i class="fas fa-images me-2"></i>Фотографии</h5>
-                        <div class="row g-3 ad-image-gallery">
-                            <div class="col-md-4 col-sm-6" th:each="img : ${advertisement.images}">
-                                <a th:href="@{/files/{fileName}(fileName=${img.fileName})}" data-lightbox="gallery">
-                                    <img th:src="@{/files/{fileName}(fileName=${img.fileName})}" 
-                                         class="img-fluid rounded shadow-sm" 
-                                         style="width: 100%; height: 250px; object-fit: cover; cursor: pointer;">
-                                </a>
+                    <div class="ad-detail-gallery" th:if="${advertisement.images == null or #lists.isEmpty(advertisement.images)}">
+                        <div class="ad-detail-gallery-empty"><i class="fas fa-image"></i></div>
+                    </div>
+
+                    <div class="ad-detail-body">
+                        <div class="ad-detail-top">
+                            <div class="flex-grow-1">
+                                <div class="ad-detail-badges">
+                                    <span class="ad-detail-badge premium" th:if="${advertisement.premium}">
+                                        <i class="fas fa-star"></i> Премиум
+                                    </span>
+                                    <span class="ad-detail-badge urgent" th:if="${advertisement.urgent}">
+                                        <i class="fas fa-bolt"></i> Срочно
+                                    </span>
+                                    <span class="ad-detail-badge category" th:text="${advertisement.category.getDisplayName()}">Категория</span>
+                                </div>
+                                <h1 class="ad-detail-title" th:text="${advertisement.title}">Заголовок</h1>
+                                <div class="ad-detail-meta">
+                                    <span class="ad-detail-meta-item"><i class="fas fa-map-marker-alt"></i><span th:text="${advertisement.city}">Город</span></span>
+                                    <span class="ad-detail-meta-item"><i class="fas fa-calendar"></i><span th:text="${#temporals.format(advertisement.createdAt, 'dd.MM.yyyy HH:mm')}">Дата</span></span>
+                                    <span class="ad-detail-meta-item"><i class="fas fa-eye"></i><span th:text="${advertisement.views}">0</span> просмотров</span>
+                                    <span class="ad-detail-meta-item"><i class="fas fa-tag"></i><span th:text="${advertisement.type.getDisplayName()}">Тип</span></span>
+                                </div>
+                            </div>
+                            <div class="ad-detail-price-wrap">
+                                <span class="ad-detail-price" th:if="${advertisement.price != null}" th:text="${'€' + advertisement.price}">€100</span>
+                                <span class="ad-detail-price muted" th:if="${advertisement.price == null}">Цена не указана</span>
+                                <div class="mt-2" sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN', 'MODERATOR')">
+                                    <a th:href="@{/edit-advertisement/{id}(id=${advertisement.id})}" class="btn btn-sm btn-outline-teal">
+                                        <i class="fas fa-edit me-1"></i>Редактировать
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Description -->
-                    <div class="mb-4">
-                        <h5 class="mb-3"><i class="fas fa-align-left me-2"></i>Описание</h5>
-                        <div class="text-muted" style="line-height: 1.8;" th:utext="${advertisement.description}">Описание объявления</div>
-                    </div>
-                    
-                    <!-- Details -->
-                    <div class="row g-3 text-muted small mb-4">
-                        <div class="col-md-6">
-                            <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i><strong>Город:</strong> <span th:text="${advertisement.city}">Город</span></p>
-                            <p class="mb-2"><i class="fas fa-calendar me-2 text-primary"></i><strong>Опубликовано:</strong> 
-                                <span th:text="${#temporals.format(advertisement.createdAt, 'dd.MM.yyyy HH:mm')}">Дата</span>
+
+                        <section class="ad-detail-section">
+                            <h2>Описание</h2>
+                            <div class="ad-detail-description" th:utext="${advertisement.description}">Описание объявления</div>
+                        </section>
+
+                        <div class="ad-detail-actions" sec:authorize="isAuthenticated()">
+                            <a th:href="@{/messages/conversation/{userId}(userId=${user.id})}"
+                               class="btn btn-coral"
+                               th:if="${user != null and (authentication == null or authentication.principal == null or authentication.principal.id != user.id)}">
+                                <i class="fas fa-envelope me-2"></i>Написать автору
+                            </a>
+                            <button class="btn-fav" id="favoriteBtn" th:data-ad-id="${advertisement.id}" onclick="toggleFavorite(this)">
+                                <i class="far fa-heart me-2"></i><span class="favorite-text">В избранное</span>
+                            </button>
+                        </div>
+
+                        <div class="ad-detail-subscribe" sec:authorize="isAuthenticated()">
+                            <h6><i class="fas fa-bell me-2"></i>Уведомления о новых объявлениях</h6>
+                            <p class="mb-0">
+                                Подпишитесь на категорию
+                                <strong th:text="${categoryEntity != null ? categoryEntity.displayName : advertisement.category.getDisplayName()}">Категория</strong>
+                                — уведомления в Telegram или на email.
+                            </p>
+                            <div class="mt-2" th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId == null and (authentication.principal.email == null or authentication.principal.email.isEmpty())}">
+                                <p class="small mb-2">Укажите Telegram или Email в профиле для подписки.</p>
+                                <a href="/profile" class="btn btn-sm btn-outline-teal"><i class="fas fa-user me-1"></i>Профиль</a>
+                            </div>
+                            <div class="mt-2" th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId == null and authentication.principal.email != null and !authentication.principal.email.isEmpty()}">
+                                <button class="btn btn-sm btn-teal" th:data-category-id="${categoryEntity != null ? categoryEntity.id : ''}" onclick="subscribeToCategory(this)" th:if="${categoryEntity != null}">
+                                    <i class="fas fa-bell me-1"></i>Подписаться
+                                </button>
+                            </div>
+                            <div class="mt-2" th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId != null}">
+                                <button class="btn btn-sm btn-teal" th:data-category-id="${categoryEntity != null ? categoryEntity.id : ''}" onclick="subscribeToCategory(this)" th:if="${categoryEntity != null}">
+                                    <i class="fas fa-bell me-1"></i>Подписаться
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="ad-detail-subscribe" sec:authorize="!isAuthenticated()" style="background:rgba(239,106,82,0.07);border-color:rgba(239,106,82,0.15);">
+                            <h6 style="color:var(--warm-coral);"><i class="fas fa-info-circle me-2"></i>Хотите получать уведомления?</h6>
+                            <p class="mb-2">
+                                <a href="/register" class="btn btn-sm btn-coral">Зарегистрироваться</a>
+                                и подписаться на категорию
+                                <strong th:text="${categoryEntity != null ? categoryEntity.displayName : advertisement.category.getDisplayName()}">Категория</strong>.
                             </p>
                         </div>
-                        <div class="col-md-6">
-                            <p class="mb-2"><i class="fas fa-eye me-2 text-primary"></i><strong>Просмотров:</strong> <span th:text="${advertisement.views}">0</span></p>
-                            <p class="mb-2"><i class="fas fa-tag me-2 text-primary"></i><strong>Тип:</strong> <span th:text="${advertisement.type.getDisplayName()}">Тип</span></p>
-                        </div>
                     </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="d-grid gap-2 mb-4" sec:authorize="isAuthenticated()">
-                        <!-- Кнопка "Написать автору" - показываем всегда для авторизованных, кроме случая когда это свое объявление -->
-                        <a th:href="@{/messages/conversation/{userId}(userId=${user.id})}" 
-                           class="btn btn-primary btn-lg"
-                           th:if="${user != null and (authentication == null or authentication.principal == null or authentication.principal.id != user.id)}">
-                            <i class="fas fa-envelope me-2"></i>Написать автору
-                        </a>
-                        <!-- Кнопка "Добавить в избранное" - для всех авторизованных -->
-                        <button class="btn btn-outline-danger" id="favoriteBtn" th:data-ad-id="${advertisement.id}" onclick="toggleFavorite(this)">
-                            <i class="far fa-heart me-2"></i><span class="favorite-text">Добавить в избранное</span>
-                        </button>
-                    </div>
-                    
-                    <!-- Subscribe to Category -->
-                    <div class="alert alert-info mb-4" sec:authorize="isAuthenticated()">
-                        <h6 class="alert-heading">
-                            <i class="fas fa-bell me-2"></i>Не пропустите новые объявления!
-                        </h6>
-                        <p class="mb-2">
-                            Мы можем прислать вам уведомление в Telegram или на email о новых объявлениях в категории 
-                            <strong th:text="${categoryEntity != null ? categoryEntity.displayName : advertisement.category.getDisplayName()}">Категория</strong>.
-                        </p>
-                        <!-- Проверяем текущего пользователя (authentication.principal), а не автора объявления -->
-                        <div th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId == null and (authentication.principal.email == null or authentication.principal.email.isEmpty())}">
-                            <p class="small mb-2">Для подписки на уведомления нужно указать Telegram или Email в профиле.</p>
-                            <a href="/profile" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-user me-1"></i>Перейти в профиль
-                            </a>
-                        </div>
-                        <div th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId == null and authentication.principal.email != null and !authentication.principal.email.isEmpty()}">
-                            <button class="btn btn-sm btn-primary" th:data-category-id="${categoryEntity != null ? categoryEntity.id : ''}" onclick="subscribeToCategory(this)" th:if="${categoryEntity != null}">
-                                <i class="fas fa-bell me-1"></i>Подписаться на категорию
-                            </button>
-                            <p class="small text-muted mt-2 mb-0">Уведомления будут приходить на email</p>
-                        </div>
-                        <div th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId != null}">
-                            <button class="btn btn-sm btn-primary" th:data-category-id="${categoryEntity != null ? categoryEntity.id : ''}" onclick="subscribeToCategory(this)" th:if="${categoryEntity != null}">
-                                <i class="fas fa-bell me-1"></i>Подписаться на категорию
-                            </button>
-                            <p class="small text-muted mt-2 mb-0" th:if="${authentication.principal.email == null or authentication.principal.email.isEmpty()}">Уведомления будут приходить в Telegram</p>
-                            <p class="small text-muted mt-2 mb-0" th:if="${authentication.principal.email != null and !authentication.principal.email.isEmpty()}">Уведомления будут приходить в Telegram и на email</p>
-                        </div>
-                    </div>
-                    <div class="alert alert-warning mb-4" sec:authorize="!isAuthenticated()">
-                        <h6 class="alert-heading">
-                            <i class="fas fa-info-circle me-2"></i>Хотите получать уведомления?
-                        </h6>
-                        <p class="mb-2">
-                            <a href="/register" class="btn btn-sm btn-primary">Зарегистрируйтесь</a> 
-                            чтобы получать уведомления о новых объявлениях в категории 
-                            <strong th:text="${categoryEntity != null ? categoryEntity.displayName : advertisement.category.getDisplayName()}">Категория</strong>.
-                        </p>
-                    </div>
-                </div>
+                </article>
             </div>
-            
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-                <!-- User Card -->
-                <div class="user-card mb-4" th:if="${user != null}">
-                    <div class="text-center mb-3">
-                        <img th:src="${user.avatarUrl != null ? '/files/' + user.avatarUrl : '/images/default-avatar.png'}" 
-                             class="user-avatar mb-3" 
-                             alt="Avatar"
-                             onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&size=80&background=667eea&color=fff'">
-                        <h5 class="mb-1 user-clickable" 
-                            th:data-user-id="${user.id}"
-                            style="cursor: pointer;"
-                            th:text="${user.username}">Пользователь</h5>
-                        <p class="text-muted small mb-2" th:if="${user.email}" th:text="${user.email}">email</p>
-                        <div class="d-flex justify-content-center gap-3 text-muted small flex-wrap">
-                            <span><i class="fas fa-list me-1"></i><span th:text="${user.advertisementsCount != null ? user.advertisementsCount : 0}">0</span> объявлений</span>
-                            <span><i class="fas fa-calendar me-1"></i><span th:text="${#temporals.format(user.createdAt, 'MM.yyyy')}">Дата</span></span>
-                        </div>
-                        <div class="mt-3">
-                            <button class="btn btn-primary btn-sm w-100 user-action-btn" 
-                                    th:data-user-id="${user.id}"
-                                    th:data-action="message"
-                                    sec:authorize="isAuthenticated()"
-                                    th:if="${authentication != null and authentication.principal != null and authentication.principal.id != user.id}">
-                                <i class="fas fa-envelope me-1"></i>Написать сообщение
-                            </button>
-                            <a th:href="@{/messages/conversation/{userId}(userId=${user.id})}" 
-                               class="btn btn-outline-primary btn-sm w-100 mt-2"
-                               sec:authorize="isAuthenticated()"
-                               th:if="${authentication != null and authentication.principal != null and authentication.principal.id != user.id}">
-                                <i class="fas fa-comments me-1"></i>Написать в личку
-                            </a>
-                            <div th:if="${advertisement.showPhone and authentication != null and authentication.principal != null}" 
-                                 class="mt-2 p-2 bg-light rounded">
-                                <small class="text-muted d-block">Телефон:</small>
-                                <strong th:text="${user.phone}">+358...</strong>
-                            </div>
-                        </div>
+
+            <aside class="col-lg-4">
+                <div class="ad-seller-card text-center" th:if="${user != null}">
+                    <img th:src="${user.avatarUrl != null ? '/files/' + user.avatarUrl : '/images/default-avatar.png'}"
+                         class="ad-seller-avatar mx-auto"
+                         th:alt="${user.username}"
+                         onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&size=64&background=0E7C66&color=fff'">
+                    <div class="ad-seller-name user-clickable"
+                         th:data-user-id="${user.id}"
+                         th:text="${user.username}">Пользователь</div>
+                    <p class="ad-seller-email mb-0" th:if="${user.email}" th:text="${user.email}">email</p>
+                    <div class="ad-seller-stats">
+                        <span><i class="fas fa-list me-1"></i><span th:text="${user.advertisementsCount != null ? user.advertisementsCount : 0}">0</span> объявл.</span>
+                        <span><i class="fas fa-calendar me-1"></i>с <span th:text="${#temporals.format(user.createdAt, 'MM.yyyy')}">01.2026</span></span>
+                    </div>
+                    <a th:href="@{/messages/conversation/{userId}(userId=${user.id})}"
+                       class="btn btn-coral w-100 btn-sm"
+                       sec:authorize="isAuthenticated()"
+                       th:if="${authentication != null and authentication.principal != null and authentication.principal.id != user.id}">
+                        <i class="fas fa-envelope me-1"></i>Написать сообщение
+                    </a>
+                    <div th:if="${advertisement.showPhone and authentication != null and authentication.principal != null}"
+                         class="ad-seller-phone text-start">
+                        <small>Телефон</small>
+                        <strong th:text="${user.phone}">+358...</strong>
                     </div>
                 </div>
-                
+
                 <!-- User Menu Modal -->
                 <div class="modal fade" id="userMenuModal" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
@@ -285,15 +213,15 @@
                 
                 <!-- Sidebar banners -->
                 <div th:replace="~{fragments/banners :: sidebar-banners}"></div>
-            </div>
+            </aside>
         </div>
-    </div>
+    </main>
 
     <div class="container my-5" th:if="${advertisement == null}">
         <div class="alert alert-warning">
             <i class="fas fa-exclamation-triangle me-2"></i>Объявление не найдено
         </div>
-        <a href="/advertisements" class="btn btn-primary">Вернуться к объявлениям</a>
+        <a href="/advertisements" class="btn btn-teal">Вернуться к объявлениям</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -302,6 +230,17 @@
     
     <script>
         let currentUserId = null;
+
+        function switchAdImage(thumb) {
+            const full = thumb.getAttribute('data-full');
+            const main = document.getElementById('adMainImage');
+            const link = document.getElementById('adMainImageLink');
+            if (!full || !main) return;
+            main.src = full;
+            if (link) link.href = full;
+            document.querySelectorAll('.ad-detail-gallery-thumbs img').forEach(img => img.classList.remove('active'));
+            thumb.classList.add('active');
+        }
         
         // Обработка кликов на пользователя (имя или аватар)
         document.addEventListener('DOMContentLoaded', function() {
@@ -409,14 +348,12 @@
                         icon.classList.remove('far');
                         icon.classList.add('fas');
                         text.textContent = 'В избранном';
-                        btn.classList.remove('btn-outline-danger');
-                        btn.classList.add('btn-danger');
+                        btn.classList.add('active');
                     } else {
                         icon.classList.remove('fas');
                         icon.classList.add('far');
-                        text.textContent = 'Добавить в избранное';
-                        btn.classList.remove('btn-danger');
-                        btn.classList.add('btn-outline-danger');
+                        text.textContent = 'В избранное';
+                        btn.classList.remove('active');
                     }
                 } else {
                     alert('Ошибка: ' + (data.error || 'Не удалось обновить избранное'));
@@ -471,8 +408,7 @@
                             icon.classList.remove('far');
                             icon.classList.add('fas');
                             text.textContent = 'В избранном';
-                            favoriteBtn.classList.remove('btn-outline-danger');
-                            favoriteBtn.classList.add('btn-danger');
+                            favoriteBtn.classList.add('active');
                         }
                     })
                     .catch(error => console.error('Error checking favorite:', error));
