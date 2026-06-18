@@ -88,6 +88,12 @@ public class Advertisement {
     
     @Column(nullable = false)
     private Boolean showPhone = false;
+
+    @Column(length = 50)
+    private String externalSource;
+
+    @Column(length = 64)
+    private String externalId;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

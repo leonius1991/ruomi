@@ -6,7 +6,9 @@ import fi.newdoska.doska.entity.Subcategory;
 import fi.newdoska.doska.repository.AdvertisementTypeRepository;
 import fi.newdoska.doska.repository.CategoryRepository;
 import fi.newdoska.doska.repository.SubcategoryRepository;
+import fi.newdoska.doska.service.CategoryManagementService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,11 +19,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/admin/categories")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+@Slf4j
 public class CategoryManagementController {
     
     private final CategoryRepository categoryRepository;
     private final SubcategoryRepository subcategoryRepository;
     private final AdvertisementTypeRepository typeRepository;
+    private final CategoryManagementService categoryManagementService;
     
     @GetMapping
     public String manageCategories(Model model) {
@@ -85,10 +89,25 @@ public class CategoryManagementController {
         return "redirect:/admin/categories";
     }
     
+    @GetMapping("/category/{id}/delete")
+    public String deleteCategoryGet(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error",
+                "Удаление выполняется через кнопку на странице категорий (POST-запрос).");
+        return "redirect:/admin/categories";
+    }
+
     @PostMapping("/category/{id}/delete")
     public String deleteCategory(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        categoryRepository.deleteById(id);
-        redirectAttributes.addFlashAttribute("success", "Категория удалена");
+        try {
+            categoryManagementService.deleteCategory(id);
+            redirectAttributes.addFlashAttribute("success", "Категория удалена");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            log.error("Ошибка удаления категории {}", id, e);
+            redirectAttributes.addFlashAttribute("error",
+                    "Не удалось удалить категорию. Возможно, на неё есть подписки или связанные данные.");
+        }
         return "redirect:/admin/categories";
     }
     

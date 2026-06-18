@@ -11,6 +11,7 @@ import fi.newdoska.doska.repository.SiteThemeRepository;
 import fi.newdoska.doska.service.AdvertisementService;
 import fi.newdoska.doska.service.BroadcastMessageService;
 import fi.newdoska.doska.service.CategorySubscriptionService;
+import fi.newdoska.doska.service.DoskaFiImportService;
 import fi.newdoska.doska.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +34,7 @@ public class AdminController {
     private final BroadcastMessageService broadcastMessageService;
     private final UserService userService;
     private final AdvertisementService advertisementService;
+    private final DoskaFiImportService doskaFiImportService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -42,6 +44,19 @@ public class AdminController {
         // Жалобы пока не реализованы, ставим 0
         model.addAttribute("totalReports", 0L);
         return "admin/dashboard";
+    }
+
+    @PostMapping("/import-doska")
+    public String importDoska(RedirectAttributes redirectAttributes) {
+        try {
+            DoskaFiImportService.ImportResult result = doskaFiImportService.importLatest();
+            redirectAttributes.addFlashAttribute("success",
+                    "Импорт doska.fi: добавлено " + result.imported()
+                            + ", пропущено " + result.skipped() + ", ошибок " + result.failed());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка импорта doska.fi: " + e.getMessage());
+        }
+        return "redirect:/admin/dashboard";
     }
 
     @GetMapping("/seo")

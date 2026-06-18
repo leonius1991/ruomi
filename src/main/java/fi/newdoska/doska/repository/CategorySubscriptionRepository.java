@@ -21,5 +21,7 @@ public interface CategorySubscriptionRepository extends JpaRepository<CategorySu
     long countByCategoryAndActiveTrue(Category category);
     
     long countByActiveTrue();
+
+    void deleteByCategory(Category category);
 }
 

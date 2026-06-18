@@ -5,115 +5,76 @@
         <!DOCTYPE html>
         <html lang="ru" xmlns:th="http://www.thymeleaf.org">
         <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <th:block th:replace="~{fragments/head-common :: viewport}"></th:block>
             <title th:text="${title}">Админ панель - ruomi.fi</title>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <link rel="stylesheet" th:href="@{/css/style.css}">
-            <style>
-                .admin-sidebar {
-                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-                    min-height: calc(100vh - 76px);
-                    padding: 2rem 0;
-                    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-                }
-                .admin-sidebar .nav-link {
-                    color: rgba(255,255,255,0.8);
-                    padding: 0.75rem 1.5rem;
-                    border-left: 3px solid transparent;
-                    transition: all 0.3s;
-                    font-size: 0.9rem;
-                }
-                .admin-sidebar .nav-link:hover,
-                .admin-sidebar .nav-link.active {
-                    color: #fff;
-                    background: rgba(255,255,255,0.1);
-                    border-left-color: #0ea5e9;
-                }
-                .admin-content {
-                    padding: 2rem;
-                    background: #f8fafc;
-                    min-height: calc(100vh - 76px);
-                }
-                .admin-card {
-                    background: white;
-                    border-radius: 12px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                    padding: 1.5rem;
-                    margin-bottom: 1.5rem;
-                }
-            </style>
+            <link rel="stylesheet" th:href="@{/css/admin-theme.css}">
         </head>
-        <body>
+        <body class="admin-page">
             <div th:replace="~{fragments/navbar :: nav}"></div>
-            
-            <div class="container-fluid">
-                <div class="row">
-                    <!-- Sidebar -->
-                    <div class="col-md-3 col-lg-2 admin-sidebar">
-                        <nav class="nav flex-column">
-                            <a class="nav-link" href="/admin/dashboard">
-                                <i class="fas fa-tachometer-alt me-2"></i>Главная
-                            </a>
-                            <a class="nav-link" href="/admin/users">
-                                <i class="fas fa-users me-2"></i>Пользователи
-                            </a>
-                            <a class="nav-link" href="/admin/categories">
-                                <i class="fas fa-list me-2"></i>Категории
-                            </a>
-                            <a class="nav-link" href="/admin/banners">
-                                <i class="fas fa-image me-2"></i>Баннеры
-                            </a>
-                            <a class="nav-link" href="/admin/premium-pricing">
-                                <i class="fas fa-euro-sign me-2"></i>Премиум цены
-                            </a>
-                            <a class="nav-link" href="/admin/seo">
-                                <i class="fas fa-search me-2"></i>SEO
-                            </a>
-                            <a class="nav-link" href="/admin/theme">
-                                <i class="fas fa-palette me-2"></i>Тема
-                            </a>
-                            <a class="nav-link" href="/admin/updates">
-                                <i class="fas fa-sync-alt me-2"></i>Обновления
-                            </a>
-                            <a class="nav-link" href="/admin/email-test">
-                                <i class="fas fa-envelope me-2"></i>Тест почты
-                            </a>
-                            <a class="nav-link" href="/admin/logs">
-                                <i class="fas fa-file-alt me-2"></i>Логи
-                            </a>
-                            <a class="nav-link" href="/moderator/dashboard">
-                                <i class="fas fa-shield-alt me-2"></i>Модерация
-                            </a>
-                        </nav>
-                        <script>
-                            // Определяем активную ссылку на основе текущего URL
-                            (function() {
-                                const currentPath = window.location.pathname;
-                                const navLinks = document.querySelectorAll('.admin-sidebar .nav-link');
-                                navLinks.forEach(link => {
-                                    const href = link.getAttribute('href');
-                                    if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
-                                        link.classList.add('active');
-                                    }
-                                });
-                            })();
-                        </script>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="col-md-9 col-lg-10 admin-content">
-                        <div th:replace="${content}"></div>
-                    </div>
-                </div>
+
+            <div class="admin-shell container-fluid px-0">
+                <aside class="admin-sidebar">
+                    <nav class="nav flex-column">
+                        <a class="nav-link" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt"></i><span>Главная</span>
+                        </a>
+                        <a class="nav-link" href="/admin/users">
+                            <i class="fas fa-users"></i><span>Пользователи</span>
+                        </a>
+                        <a class="nav-link" href="/admin/categories">
+                            <i class="fas fa-list"></i><span>Категории</span>
+                        </a>
+                        <a class="nav-link" href="/admin/banners">
+                            <i class="fas fa-image"></i><span>Баннеры</span>
+                        </a>
+                        <a class="nav-link" href="/admin/premium-pricing">
+                            <i class="fas fa-euro-sign"></i><span>Премиум цены</span>
+                        </a>
+                        <a class="nav-link" href="/admin/seo">
+                            <i class="fas fa-search"></i><span>SEO</span>
+                        </a>
+                        <a class="nav-link" href="/admin/theme">
+                            <i class="fas fa-palette"></i><span>Тема</span>
+                        </a>
+                        <a class="nav-link" href="/admin/updates">
+                            <i class="fas fa-sync-alt"></i><span>Обновления</span>
+                        </a>
+                        <a class="nav-link" href="/admin/email-test">
+                            <i class="fas fa-envelope"></i><span>Тест почты</span>
+                        </a>
+                        <a class="nav-link" href="/admin/logs">
+                            <i class="fas fa-file-alt"></i><span>Логи</span>
+                        </a>
+                        <a class="nav-link" href="/moderator/dashboard">
+                            <i class="fas fa-shield-alt"></i><span>Модерация</span>
+                        </a>
+                    </nav>
+                </aside>
+
+                <main class="admin-content">
+                    <div th:replace="${content}"></div>
+                </main>
             </div>
-            
-            <!-- Bootstrap JS -->
+
+            <div th:replace="~{fragments/site-footer :: footer}"></div>
+
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                (function() {
+                    const currentPath = window.location.pathname;
+                    document.querySelectorAll('.admin-sidebar .nav-link').forEach(link => {
+                        const href = link.getAttribute('href');
+                        if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
+                            link.classList.add('active');
+                        }
+                    });
+                })();
+            </script>
         </body>
         </html>
     </div>
 </body>
 </html>
-

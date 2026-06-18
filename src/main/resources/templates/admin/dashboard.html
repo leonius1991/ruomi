@@ -3,48 +3,57 @@
 <body>
     <div th:replace="~{fragments/admin-layout :: admin-layout('Админ панель - ruomi.fi', ~{::content})}">
         <th:block th:fragment="content">
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
             <div class="admin-card">
-                <h1 class="mb-4">Админ панель</h1>
-                
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="stat-card" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
-                            <h3 class="mb-0" th:text="${totalUsers}">0</h3>
-                            <p class="mb-0">Всего пользователей</p>
-                        </div>
+                <h1 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>Админ панель</h1>
+
+                <div class="admin-stat-grid">
+                    <div class="admin-stat">
+                        <div class="value" th:text="${totalUsers}">0</div>
+                        <div class="label">Пользователей</div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card success" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
-                            <h3 class="mb-0" th:text="${activeAdvertisements}">0</h3>
-                            <p class="mb-0">Активных объявлений</p>
-                        </div>
+                    <div class="admin-stat">
+                        <div class="value" th:text="${activeAdvertisements}">0</div>
+                        <div class="label">Активных объявлений</div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card warning" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
-                            <h3 class="mb-0" th:text="${pendingAdvertisements}">0</h3>
-                            <p class="mb-0">На модерации</p>
-                        </div>
+                    <div class="admin-stat">
+                        <div class="value" th:text="${pendingAdvertisements}">0</div>
+                        <div class="label">На модерации</div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stat-card danger" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
-                            <h3 class="mb-0" th:text="${totalReports}">0</h3>
-                            <p class="mb-0">Жалоб</p>
-                        </div>
+                    <div class="admin-stat">
+                        <div class="value" th:text="${totalReports}">0</div>
+                        <div class="label">Жалоб</div>
                     </div>
                 </div>
-                
-                <div class="admin-card">
-                    <h3>Быстрые действия</h3>
-                    <div class="d-grid gap-2 d-md-flex">
+
+                <div class="admin-card mb-0">
+                    <h3 class="mb-3">Быстрые действия</h3>
+                    <div class="d-flex flex-wrap gap-2">
                         <a href="/admin/users" class="btn btn-primary">
-                            <i class="fas fa-users me-2"></i>Управление пользователями
+                            <i class="fas fa-users me-2"></i>Пользователи
                         </a>
-                        <a href="/moderator/dashboard" class="btn btn-warning">
-                            <i class="fas fa-shield-alt me-2"></i>Модерация объявлений
+                        <a href="/admin/categories" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>Категории
                         </a>
-                        <a href="/admin/updates" class="btn btn-info">
-                            <i class="fas fa-sync-alt me-2"></i>Проверить обновления
+                        <a href="/moderator/dashboard" class="btn btn-outline-light border-secondary">
+                            <i class="fas fa-shield-alt me-2"></i>Модерация
                         </a>
+                        <a href="/admin/updates" class="btn btn-outline-light border-secondary">
+                            <i class="fas fa-sync-alt me-2"></i>Обновления
+                        </a>
+                        <form action="/admin/import-doska" method="post" class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-outline-light border-secondary">
+                                <i class="fas fa-download me-2"></i>Импорт с doska.fi
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
