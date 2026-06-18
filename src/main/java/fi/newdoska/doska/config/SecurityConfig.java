@@ -21,7 +21,8 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/", "/advertisements", "/advertisement/**", "/about", "/contact", 
-                               "/terms", "/privacy", "/help", "/css/**", "/js/**", "/images/**", "/data/**", "/theme/**", "/files/**").permitAll()
+                               "/terms", "/privacy", "/help", "/border-queues", "/api/border-queues/**",
+                               "/css/**", "/js/**", "/images/**", "/data/**", "/theme/**", "/files/**").permitAll()
                 .requestMatchers("/register", "/login", "/verify", "/forgot-password", "/reset-password").permitAll()
                 .requestMatchers("/auth/telegram/callback").permitAll()
                 .requestMatchers("/subscriptions/**").authenticated()

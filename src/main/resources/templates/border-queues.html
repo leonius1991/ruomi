@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Очередь на границе</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/theme/css}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: nav}"></div>
+
+<main class="container py-4">
+    <div class="border-page-hero">
+        <span class="section-kicker"><i class="fas fa-road me-2"></i>Estonia ↔ Россия</span>
+        <h1 class="ruomi-section-title mb-2">Очередь на границе</h1>
+        <p class="text-muted mb-0">
+            Данные с <a href="https://www.estonianborder.eu/yphis/borderQueueInfo.action" target="_blank" rel="noopener">estonianborder.eu</a>.
+            Когда live queue уменьшается — фиксируем примерное число проехавших машин.
+            <span th:if="${dashboard.lastUpdate != null}" class="d-block mt-2 small">
+                Обновлено: <span th:text="${#temporals.format(dashboard.lastUpdate, 'dd.MM.yyyy HH:mm')}">—</span>
+            </span>
+        </p>
+    </div>
+
+    <div class="border-live-grid">
+        <div class="border-live-card">
+            <h3><i class="fas fa-map-marker-alt me-2" style="color:var(--warm-teal)"></i>Koidula (Койдула)</h3>
+            <div class="border-live-count" id="koidulaLive" th:text="${dashboard.koidulaLive}">0</div>
+            <div class="border-live-meta">сейчас в live queue (все полосы)</div>
+            <div class="mt-2"><span class="badge rounded-pill" style="background:rgba(14,124,102,.12);color:var(--warm-teal);">
+                Сегодня проехало ≈ <span th:text="${dashboard.koidulaToday}">0</span>
+            </span></div>
+        </div>
+        <div class="border-live-card">
+            <h3><i class="fas fa-map-marker-alt me-2" style="color:var(--warm-coral)"></i>Luhamaa (Лухамаа)</h3>
+            <div class="border-live-count" style="color:var(--warm-coral)" id="luhamaaLive" th:text="${dashboard.luhamaaLive}">0</div>
+            <div class="border-live-meta">сейчас в live queue (все полосы)</div>
+            <div class="mt-2"><span class="badge rounded-pill" style="background:rgba(239,106,82,.12);color:var(--warm-coral);">
+                Сегодня проехало ≈ <span th:text="${dashboard.luhamaaToday}">0</span>
+            </span></div>
+        </div>
+    </div>
+
+    <div class="border-chart-card">
+        <h4 class="mb-3"><i class="fas fa-chart-column me-2"></i>Оценка пропуска по дням</h4>
+        <canvas id="dailyChart" height="110"></canvas>
+        <p class="text-muted small mt-3 mb-0">
+            График строится по уменьшению live queue. Это приблизительная оценка, не официальная статистика погранслужбы.
+        </p>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="border-chart-card h-100">
+                <h5 class="mb-3">По полосам (сейчас)</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm border-lanes-table mb-0">
+                        <thead><tr><th>КПП</th><th>Полоса</th><th class="text-end">Live queue</th></tr></thead>
+                        <tbody>
+                        <tr th:each="s : ${dashboard.latestLanes}">
+                            <td th:text="${s.checkpoint == 'KOIDULA' ? 'Koidula' : 'Luhamaa'}">Koidula</td>
+                            <td th:text="${s.lane}">A/B</td>
+                            <td class="text-end fw-semibold" th:text="${s.liveCount}">0</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(dashboard.latestLanes)}">
+                            <td colspan="3" class="text-muted">Данные собираются… первая запись через несколько минут.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="border-chart-card h-100">
+                <h5 class="mb-3">Последние изменения</h5>
+                <div class="table-responsive" style="max-height:320px;overflow:auto;">
+                    <table class="table table-sm border-lanes-table mb-0">
+                        <thead><tr><th>Время</th><th>КПП</th><th>Событие</th><th class="text-end">Δ</th></tr></thead>
+                        <tbody>
+                        <tr th:each="e : ${dashboard.recentEvents}">
+                            <td th:text="${#temporals.format(e.recordedAt, 'dd.MM HH:mm')}">—</td>
+                            <td th:text="${e.checkpoint}">—</td>
+                            <td>
+                                <span th:if="${e.eventType.name() == 'EXIT'}" class="text-success">Проезд</span>
+                                <span th:if="${e.eventType.name() == 'ENTER'}" class="text-warning">Въезд в очередь</span>
+                                <small class="text-muted" th:text="' ' + ${e.lane}"></small>
+                            </td>
+                            <td class="text-end" th:text="${e.delta}">0</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(dashboard.recentEvents)}">
+                            <td colspan="4" class="text-muted">Событий пока нет</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    const dailyExits = JSON.parse(/*[[${dailyExitsJson}]]*/ '{}');
+    const labels = [...new Set([
+        ...Object.keys(dailyExits.KOIDULA || {}),
+        ...Object.keys(dailyExits.LUHAMAA || {})
+    ])].sort();
+
+    const koidulaData = labels.map(d => (dailyExits.KOIDULA && dailyExits.KOIDULA[d]) || 0);
+    const luhamaaData = labels.map(d => (dailyExits.LUHAMAA && dailyExits.LUHAMAA[d]) || 0);
+
+    const ctx = document.getElementById('dailyChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Koidula', data: koidulaData, backgroundColor: 'rgba(14, 124, 102, 0.75)', borderRadius: 8 },
+                    { label: 'Luhamaa', data: luhamaaData, backgroundColor: 'rgba(239, 106, 82, 0.75)', borderRadius: 8 }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+    }
+
+    setInterval(async () => {
+        try {
+            const r = await fetch('/api/border-queues/stats');
+            if (!r.ok) return;
+            const data = await r.json();
+            document.getElementById('koidulaLive').textContent = data.koidulaLive;
+            document.getElementById('luhamaaLive').textContent = data.luhamaaLive;
+        } catch (_) {}
+    }, 180000);
+</script>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

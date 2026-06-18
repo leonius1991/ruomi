@@ -1314,3 +1314,177 @@ html[data-theme="dark"] .ql-snow .ql-stroke { stroke: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-fill { fill: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-picker { color: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-picker-options { background-color: var(--warm-card); }
+
+/* ---------- Homepage: stats, telegram, features, border promo ---------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+.stat-card-warm {
+    background: var(--warm-card);
+    border: 1px solid var(--warm-line);
+    border-radius: var(--warm-radius);
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    box-shadow: var(--warm-shadow);
+}
+.stat-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; margin-bottom: 0.75rem;
+}
+.stat-icon-teal { background: rgba(14, 124, 102, 0.12); color: var(--warm-teal); }
+.stat-icon-green { background: rgba(46, 158, 107, 0.12); color: var(--warm-green); }
+.stat-icon-coral { background: rgba(239, 106, 82, 0.12); color: var(--warm-coral); }
+.stat-value { font-size: 2rem; font-weight: 700; color: var(--warm-ink); line-height: 1.1; }
+.stat-label { color: var(--warm-muted); font-size: 0.95rem; margin-top: 0.35rem; }
+
+.section-kicker {
+    display: inline-block;
+    background: rgba(14, 124, 102, 0.1);
+    color: var(--warm-teal);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+}
+.ruomi-section-title { font-size: 1.75rem; font-weight: 700; color: var(--warm-ink); }
+.ruomi-section-lead { color: var(--warm-muted); font-size: 1.05rem; max-width: 540px; }
+
+.ruomi-telegram-section {
+    background: linear-gradient(135deg, rgba(14, 124, 102, 0.08) 0%, rgba(239, 106, 82, 0.06) 100%);
+}
+.ruomi-check-list { list-style: none; padding: 0; margin: 0; }
+.ruomi-check-list li {
+    display: flex; align-items: center; gap: 0.65rem;
+    padding: 0.45rem 0; color: var(--warm-ink);
+}
+.ruomi-check-list li i { color: var(--warm-teal); }
+
+.telegram-phone-card {
+    background: var(--warm-card);
+    border: 1px solid var(--warm-line);
+    border-radius: 22px;
+    box-shadow: var(--warm-shadow-lg);
+    overflow: hidden;
+    max-width: 380px;
+    margin: 0 auto;
+}
+.telegram-phone-header {
+    display: flex; align-items: center; gap: 0.85rem;
+    padding: 1rem 1.15rem;
+    background: linear-gradient(135deg, var(--warm-teal) 0%, #2E9E6B 100%);
+    color: #fff;
+}
+.telegram-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.35rem;
+}
+.telegram-phone-header small { display: block; opacity: 0.85; }
+.telegram-phone-body { padding: 1.15rem; }
+.telegram-bubble {
+    background: var(--warm-cream-2);
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.85rem;
+    color: var(--warm-ink);
+    font-size: 0.95rem;
+}
+.telegram-actions { display: grid; gap: 0.5rem; }
+.telegram-actions span {
+    display: block;
+    border: 1px solid var(--warm-line);
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.9rem;
+    color: var(--warm-teal);
+    background: #fff;
+}
+
+.ruomi-features-section { background: var(--warm-cream); }
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+.feature-card-warm {
+    background: var(--warm-card);
+    border: 1px solid var(--warm-line);
+    border-radius: var(--warm-radius);
+    padding: 1.5rem 1.15rem;
+    text-align: center;
+    box-shadow: var(--warm-shadow);
+    height: 100%;
+}
+.feature-icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.35rem; margin-bottom: 1rem;
+}
+.feature-icon-teal { background: rgba(14, 124, 102, 0.12); color: var(--warm-teal); }
+.feature-icon-green { background: rgba(46, 158, 107, 0.12); color: var(--warm-green); }
+.feature-icon-coral { background: rgba(239, 106, 82, 0.12); color: var(--warm-coral); }
+.feature-card-warm h5 { font-size: 1rem; font-weight: 700; color: var(--warm-ink); margin-bottom: 0.5rem; }
+.feature-card-warm p { color: var(--warm-muted); font-size: 0.92rem; margin: 0; }
+
+.border-promo-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    background: var(--warm-card);
+    border: 1px solid var(--warm-line);
+    border-radius: var(--warm-radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--warm-shadow);
+}
+
+@media (max-width: 991px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 575px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .ruomi-section-title { font-size: 1.45rem; }
+}
+
+/* ---------- Border queues page ---------- */
+.border-page-hero {
+    background: linear-gradient(135deg, rgba(14, 124, 102, 0.12), rgba(239, 106, 82, 0.08));
+    border-radius: var(--warm-radius);
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.border-live-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.border-live-card {
+    background: var(--warm-card);
+    border: 1px solid var(--warm-line);
+    border-radius: var(--warm-radius);
+    padding: 1.25rem;
+    box-shadow: var(--warm-shadow);
+}
+.border-live-card h3 { font-size: 1.15rem; font-weight: 700; color: var(--warm-ink); margin-bottom: 0.25rem; }
+.border-live-count {
+    font-size: 2.5rem; font-weight: 800; color: var(--warm-teal); line-height: 1;
+}
+.border-live-meta { color: var(--warm-muted); font-size: 0.9rem; margin-top: 0.5rem; }
+.border-chart-card {
+    background: var(--warm-card);
+    border: 1px solid var(--warm-line);
+    border-radius: var(--warm-radius);
+    padding: 1.25rem;
+    box-shadow: var(--warm-shadow);
+    margin-bottom: 1rem;
+}
+.border-lanes-table { font-size: 0.92rem; }
+.border-lanes-table th { color: var(--warm-muted); font-weight: 600; }
+@media (max-width: 767px) {
+    .border-live-grid { grid-template-columns: 1fr; }
+}
