@@ -20,7 +20,7 @@ echo
 # ==============================
 # НАСТРОЙКИ
 # ==============================
-GITHUB_OWNER="mifedweb"
+GITHUB_OWNER="leonius1991"
 GITHUB_REPO="ruomi"
 
 # Получаем artifactId из pom.xml

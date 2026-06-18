@@ -144,7 +144,7 @@ info "Загрузка JAR файла..."
 read -p "Введите URL для скачивания JAR (или Enter для использования GitHub Releases): " JAR_URL
 
 if [ -z "$JAR_URL" ]; then
-    GITHUB_OWNER="mifedweb"
+    GITHUB_OWNER="leonius1991"
     GITHUB_REPO="ruomi"
     LATEST_RELEASE=$(curl -s "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest")
     JAR_URL=$(echo $LATEST_RELEASE | grep -o '"browser_download_url": "[^"]*\.jar"' | head -1 | cut -d'"' -f4)
@@ -191,7 +191,7 @@ spring.thymeleaf.encoding=UTF-8
 
 # Application Update Configuration
 app.version=0.0.1-SNAPSHOT
-app.update.github.owner=mifedweb
+app.update.github.owner=leonius1991
 app.update.github.repo=ruomi
 app.update.download.path=./updates
 app.update.backup.path=./backups

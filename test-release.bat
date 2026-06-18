@@ -34,7 +34,7 @@ echo [OK] Авторизация успешна
 echo.
 
 REM [3] Задаем репозиторий явно (без плясок)
-set GITHUB_OWNER=mifedweb
+set GITHUB_OWNER=leonius1991
 set GITHUB_REPO=ruomi
 
 echo [3] Используем настройки:
