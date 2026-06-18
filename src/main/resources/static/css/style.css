@@ -1202,7 +1202,10 @@ html[data-theme="dark"] {
     color-scheme: dark;
 }
 
-html[data-theme="dark"] body { color: var(--warm-ink); }
+html[data-theme="dark"] body {
+    background-color: var(--warm-cream) !important;
+    color: var(--warm-ink);
+}
 
 /* Навбар */
 html[data-theme="dark"] nav.navbar.ruomi-navbar {
@@ -1314,6 +1317,63 @@ html[data-theme="dark"] .ql-snow .ql-stroke { stroke: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-fill { fill: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-picker { color: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-picker-options { background-color: var(--warm-card); }
+
+html[data-theme="dark"] .ruomi-telegram-section,
+html[data-theme="dark"] .ruomi-features-section { background: var(--warm-cream); }
+html[data-theme="dark"] .feature-card-warm,
+html[data-theme="dark"] .stat-card-warm,
+html[data-theme="dark"] .border-live-card,
+html[data-theme="dark"] .border-chart-card,
+html[data-theme="dark"] .border-lane-filter {
+    background: var(--warm-card);
+    border-color: var(--warm-line);
+}
+html[data-theme="dark"] .border-page-hero {
+    background: linear-gradient(135deg, rgba(47, 178, 149, 0.12), rgba(240, 119, 95, 0.08));
+}
+html[data-theme="dark"] .border-telegram-banner {
+    background: linear-gradient(135deg, rgba(47, 178, 149, 0.16) 0%, rgba(240, 119, 95, 0.1) 55%, rgba(15, 26, 23, 0.95) 100%);
+    border-color: var(--warm-line);
+}
+html[data-theme="dark"] .border-telegram-mockup,
+html[data-theme="dark"] .telegram-phone-card {
+    background: var(--warm-card);
+    border-color: var(--warm-line);
+}
+html[data-theme="dark"] .border-telegram-mockup-body,
+html[data-theme="dark"] .telegram-phone-body { background: var(--warm-cream-2); }
+html[data-theme="dark"] .telegram-bubble { background: var(--warm-card); color: var(--warm-ink); }
+html[data-theme="dark"] .border-telegram-mockup-actions span,
+html[data-theme="dark"] .telegram-actions span {
+    background: var(--warm-card);
+    border-color: var(--warm-line);
+    color: var(--warm-teal);
+}
+html[data-theme="dark"] .border-lane-btn {
+    background: var(--warm-cream-2);
+    border-color: var(--warm-line);
+    color: var(--warm-ink);
+}
+html[data-theme="dark"] .border-lane-btn.active {
+    background: var(--warm-teal);
+    border-color: var(--warm-teal);
+    color: #fff;
+}
+html[data-theme="dark"] .search-pill {
+    background: var(--warm-card);
+    border-color: var(--warm-line);
+}
+html[data-theme="dark"] .search-pill .form-control {
+    background: transparent;
+    color: var(--warm-ink);
+}
+html[data-theme="dark"] .city-pill {
+    background: var(--warm-card);
+    border-color: var(--warm-line);
+    color: var(--warm-ink);
+}
+html[data-theme="dark"] .ruomi-navbar .nav-link { color: var(--warm-ink); }
+html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal); }
 
 /* ---------- Homepage: stats, telegram, features, border promo ---------- */
 .stats-grid {

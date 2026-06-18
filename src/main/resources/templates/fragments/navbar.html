@@ -70,7 +70,7 @@
                 <i class="fas fa-plus me-1"></i>Подать объявление
             </a>
 
-            <button class="theme-toggle me-2" type="button" id="themeToggle" onclick="ruomiToggleTheme()" aria-label="Переключить тему" title="Тёмная / светлая тема">
+            <button class="theme-toggle me-2" type="button" id="themeToggle" aria-label="Переключить тему" title="Тёмная / светлая тема">
                 <i class="fas fa-moon"></i>
             </button>
             
@@ -173,25 +173,41 @@
                 </div>
             </div>
         </div>
-    </nav>
-    
-    <style>
-        .dropdown-menu-mega {
-            position: absolute;
-        }
-        
-        .dropdown-menu-mega .row {
-            margin: 0;
-        }
-        
-        .dropdown-menu-mega .col-md-3 {
-            padding: 0 1rem;
-        }
-        
-        .dropdown-menu-mega a:hover {
-            color: #0E7C66 !important;
-        }
-        
+
+        <script>
+            (function () {
+                function syncThemeIcon() {
+                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    var icon = document.querySelector('#themeToggle i');
+                    if (icon) { icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon'; }
+                }
+                function toggleTheme() {
+                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    if (isDark) {
+                        document.documentElement.removeAttribute('data-theme');
+                        try { localStorage.setItem('ruomi-theme', 'light'); } catch (e) {}
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        try { localStorage.setItem('ruomi-theme', 'dark'); } catch (e) {}
+                    }
+                    syncThemeIcon();
+                }
+                window.ruomiToggleTheme = toggleTheme;
+                var btn = document.getElementById('themeToggle');
+                if (btn) { btn.addEventListener('click', toggleTheme); }
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', syncThemeIcon);
+                } else {
+                    syncThemeIcon();
+                }
+            })();
+        </script>
+
+        <style>
+        .dropdown-menu-mega { position: absolute; }
+        .dropdown-menu-mega .row { margin: 0; }
+        .dropdown-menu-mega .col-md-3 { padding: 0 1rem; }
+        .dropdown-menu-mega a:hover { color: #0E7C66 !important; }
         @media (max-width: 991px) {
             .dropdown-menu-mega {
                 width: 100% !important;
@@ -200,90 +216,46 @@
                 transform: none !important;
                 padding: 1rem !important;
             }
-            
-            .dropdown-menu-mega .col-md-3 {
-                width: 100%;
-                margin-bottom: 1.5rem;
-            }
+            .dropdown-menu-mega .col-md-3 { width: 100%; margin-bottom: 1.5rem; }
         }
-    </style>
-    
-    <script>
-        // Переключение тёмной / светлой темы
-        function ruomiSyncThemeIcon() {
-            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            var icon = document.querySelector('#themeToggle i');
-            if (icon) { icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon'; }
-        }
-        function ruomiToggleTheme() {
-            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            if (isDark) {
-                document.documentElement.removeAttribute('data-theme');
-                try { localStorage.setItem('ruomi-theme', 'light'); } catch (e) {}
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                try { localStorage.setItem('ruomi-theme', 'dark'); } catch (e) {}
-            }
-            ruomiSyncThemeIcon();
-        }
-        document.addEventListener('DOMContentLoaded', ruomiSyncThemeIcon);
+        </style>
 
-        // Проверка непрочитанных сообщений для бейджа в меню
+        <script>
         document.addEventListener('DOMContentLoaded', function() {
             const badge = document.getElementById('unreadMessagesBadge');
             const countText = document.getElementById('unreadMessagesCount');
             const navbarBadge = document.getElementById('navbarUnreadMessagesBadge');
-            
+
             function updateUnreadCount() {
                 fetch('/messages/api/unread-count')
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
+                        if (!response.ok) throw new Error('Network response was not ok');
                         return response.json();
                     })
                     .then(data => {
                         const count = data.count || 0;
                         if (count > 0) {
-                            if (badge) {
-                                badge.textContent = count;
-                                badge.style.display = 'inline-block';
-                            }
-                            if (countText) {
-                                countText.textContent = '(' + count + ')';
-                            }
-                            if (navbarBadge) {
-                                navbarBadge.textContent = count;
-                                navbarBadge.style.display = 'inline-block';
-                            }
+                            if (badge) { badge.textContent = count; badge.style.display = 'inline-block'; }
+                            if (countText) countText.textContent = '(' + count + ')';
+                            if (navbarBadge) { navbarBadge.textContent = count; navbarBadge.style.display = 'inline-block'; }
                         } else {
-                            if (badge) {
-                                badge.style.display = 'none';
-                            }
-                            if (countText) {
-                                countText.textContent = '';
-                            }
-                            if (navbarBadge) {
-                                navbarBadge.style.display = 'none';
-                            }
+                            if (badge) badge.style.display = 'none';
+                            if (countText) countText.textContent = '';
+                            if (navbarBadge) navbarBadge.style.display = 'none';
                         }
                     })
-                    .catch(err => {
-                        console.debug('Messages service not available yet:', err);
-                        // Скрываем бейджи при ошибке
+                    .catch(() => {
                         if (badge) badge.style.display = 'none';
                         if (countText) countText.textContent = '';
                         if (navbarBadge) navbarBadge.style.display = 'none';
                     });
             }
-            
+
             if (badge || countText || navbarBadge) {
                 updateUnreadCount();
-                // Обновляем каждые 30 секунд
                 setInterval(updateUnreadCount, 30000);
             }
-            
-            // Проверка новой версии для админов
+
             const updatesMenuItem = document.getElementById('updatesMenuItem');
             const newVersionBadge = document.getElementById('newVersionBadge');
             if (updatesMenuItem && newVersionBadge) {
@@ -295,11 +267,10 @@
                             newVersionBadge.title = 'Доступна новая версия: ' + data.newVersion;
                         }
                     })
-                    .catch(err => {
-                        console.debug('Update check not available');
-                    });
+                    .catch(() => {});
             }
         });
-    </script>
+        </script>
+    </nav>
 </body>
 </html>
