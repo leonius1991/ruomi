@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Back to top button
     const backToTopButton = document.createElement('button');
     backToTopButton.innerHTML = '<i class="fas fa-arrow-up"></i>';
-    backToTopButton.className = 'btn btn-primary position-fixed';
+    backToTopButton.className = 'btn btn-primary position-fixed ruomi-back-to-top';
     backToTopButton.style.cssText = 'bottom: 20px; right: 20px; z-index: 1000; border-radius: 50%; width: 50px; height: 50px; display: none;';
     document.body.appendChild(backToTopButton);
     

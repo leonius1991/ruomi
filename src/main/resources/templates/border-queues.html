@@ -83,7 +83,7 @@
             <h3><i class="fas fa-map-marker-alt me-2" style="color:var(--warm-teal)"></i>Koidula (Койдула)</h3>
             <div class="border-live-count" id="koidulaLive" th:text="${dashboard.koidulaLive}">0</div>
             <div class="border-live-meta">сейчас в live queue · <span id="laneLabel">A/B</span></div>
-            <div class="mt-2"><span class="badge rounded-pill" style="background:rgba(14,124,102,.12);color:var(--warm-teal);">
+            <div class="mt-2"><span class="badge rounded-pill" style="background:rgba(124,58,237,.15);color:var(--warm-teal);">
                 Сегодня проехало ≈ <span id="koidulaToday" th:text="${dashboard.koidulaToday}">0</span>
             </span></div>
         </div>
@@ -241,7 +241,7 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Koidula', data: labels.map(d => kDaily[d] || 0), backgroundColor: 'rgba(14, 124, 102, 0.75)', borderRadius: 8 },
+                    { label: 'Koidula', data: labels.map(d => kDaily[d] || 0), backgroundColor: 'rgba(124, 58, 237, 0.75)', borderRadius: 8 },
                     { label: 'Luhamaa', data: labels.map(d => lDaily[d] || 0), backgroundColor: 'rgba(239, 106, 82, 0.75)', borderRadius: 8 }
                 ]
             },

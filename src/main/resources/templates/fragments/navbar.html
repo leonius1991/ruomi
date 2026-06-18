@@ -18,7 +18,7 @@
                 <ul class="dropdown-menu dropdown-menu-mega" aria-labelledby="categoriesDropdown" style="width: 100%; max-width: 1100px; left: 50%; transform: translateX(-50%); margin-top: 0.35rem; padding: 1.25rem; border-radius: 14px; box-shadow: 0 8px 28px rgba(31,61,53,0.14);">
                     <div class="row">
                         <div class="col-md-3" th:each="menu : ${categoryMenus}">
-                            <h6 class="fw-bold mb-3" style="color: #0E7C66; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <h6 class="fw-bold mb-3" style="color: #A78BFA; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">
                                 <i class="fa-solid me-2" th:classappend="${' ' + menu.icon()}"></i>
                                 <span th:text="${menu.label()}">Категория</span>
                             </h6>
@@ -220,7 +220,7 @@
         .dropdown-menu-mega { position: absolute; }
         .dropdown-menu-mega .row { margin: 0; }
         .dropdown-menu-mega .col-md-3 { padding: 0 1rem; }
-        .dropdown-menu-mega a:hover { color: #0E7C66 !important; }
+        .dropdown-menu-mega a:hover { color: #A78BFA !important; }
         @media (max-width: 991px) {
             .dropdown-menu-mega {
                 width: 100% !important;

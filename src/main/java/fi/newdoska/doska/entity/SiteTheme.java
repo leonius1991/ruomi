@@ -17,13 +17,13 @@ public class SiteTheme {
     private Long id = 1L;
     
     @Column(nullable = false)
-    private String primaryColor = "#0E7C66";
+    private String primaryColor = "#7C3AED";
     
     @Column(nullable = false)
-    private String secondaryColor = "#6B7C75";
+    private String secondaryColor = "#6B5B80";
     
     @Column(nullable = false)
-    private String successColor = "#2E9E6B";
+    private String successColor = "#A855F7";
     
     @Column(nullable = false)
     private String dangerColor = "#E0573F";
@@ -32,7 +32,7 @@ public class SiteTheme {
     private String warningColor = "#E0A23B";
     
     @Column(nullable = false)
-    private String infoColor = "#2A9D8F";
+    private String infoColor = "#8B5CF6";
     
     // Размеры текста
     @Column(nullable = false)
@@ -52,7 +52,7 @@ public class SiteTheme {
     private String borderRadius = "0.85rem";
     
     @Column(nullable = false)
-    private String boxShadow = "0 0.125rem 0.5rem rgba(31, 61, 53, 0.08)";
+    private String boxShadow = "0 0.125rem 0.5rem rgba(76, 29, 149, 0.12)";
     
     @Column(nullable = false)
     private String navbarHeight = "68px";
@@ -62,9 +62,9 @@ public class SiteTheme {
     
     // Hero section gradient colors
     @Column(nullable = false)
-    private String heroGradientStart = "#0E7C66";
+    private String heroGradientStart = "#5B21B6";
     
     @Column(nullable = false)
-    private String heroGradientEnd = "#2E9E6B";
+    private String heroGradientEnd = "#7C3AED";
 }
 

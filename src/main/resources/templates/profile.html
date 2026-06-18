@@ -67,7 +67,7 @@
                                 <div class="text-center mb-4">
                                     <img th:src="${user.avatarUrl != null and !user.avatarUrl.isEmpty() ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : '/files/' + user.avatarUrl) : 'https://ui-avatars.com/api/?name=' + #strings.replace(user.username, ' ', '+') + '&size=120&background=0E7C66&color=fff'}"
                                          class="rounded-circle mb-3"
-                                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #0E7C66;"
+                                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #7C3AED;"
                                          th:alt="${user.username}"
                                          onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&size=120&background=0E7C66&color=fff'">
                                     <form th:if="${isOwnProfile}" th:action="@{/profile/upload-avatar}" method="post" enctype="multipart/form-data" class="d-inline">

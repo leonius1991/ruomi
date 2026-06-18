@@ -15,7 +15,7 @@ html[data-theme="dark"] {
     --warm-teal-dark: #8B5CF6;
     --warm-coral: #F472B6;
     --warm-coral-dark: #EC4899;
-    --warm-green: #6EE7B7;
+    --warm-green: #C084FC;
     --warm-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
     --warm-shadow-lg: 0 24px 60px rgba(76, 29, 149, 0.35);
     --warm-radius: 16px;
@@ -46,7 +46,7 @@ html[data-theme="light"] {
     --warm-teal-dark: #6D28D9;
     --warm-coral: #EF6A52;
     --warm-coral-dark: #E0573F;
-    --warm-green: #2E9E6B;
+    --warm-green: #C084FC;
     --warm-shadow: 0 8px 28px rgba(76, 29, 149, 0.1);
     --warm-shadow-lg: 0 20px 50px rgba(76, 29, 149, 0.14);
     --glass-bg: rgba(255, 255, 255, 0.58);
@@ -253,6 +253,56 @@ button.border-lane-btn.active {
     color: var(--warm-ink);
     margin-top: 1rem;
     padding-bottom: 1rem;
+    position: relative;
+}
+
+.ruomi-site-footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 100%, rgba(91, 33, 182, 0.35) 0%, transparent 70%),
+        linear-gradient(180deg, transparent 0%, rgba(10, 7, 24, 0.85) 30%, rgba(6, 4, 15, 0.95) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ruomi-site-footer > .container,
+.ruomi-site-footer .ruomi-visit-stats {
+    position: relative;
+    z-index: 1;
+}
+
+.ruomi-visit-stats-inner {
+    background: rgba(22, 16, 42, 0.75) !important;
+    border-color: rgba(167, 139, 250, 0.28) !important;
+}
+
+.ruomi-visit-stat i {
+    color: #A78BFA !important;
+}
+
+html[data-theme="light"] .ruomi-site-footer::before {
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 100%, rgba(124, 58, 237, 0.12) 0%, transparent 70%),
+        linear-gradient(180deg, transparent 0%, rgba(237, 232, 247, 0.9) 40%, #EAE2FF 100%);
+}
+
+html[data-theme="light"] .ruomi-visit-stats-inner {
+    background: rgba(255, 255, 255, 0.72) !important;
+}
+
+/* Back to top */
+.ruomi-back-to-top {
+    background: var(--accent-gradient) !important;
+    border: 1px solid rgba(167, 139, 250, 0.35) !important;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45) !important;
+    color: #fff !important;
+}
+
+.ruomi-back-to-top:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
 }
 
 .ruomi-site-footer .ruomi-visit-stats {
@@ -378,11 +428,11 @@ html[data-theme="light"] .form-select {
 
 /* ---------- Old footer gradient override ---------- */
 footer {
-    background: linear-gradient(180deg, transparent 0%, rgba(76, 29, 149, 0.08) 100%) !important;
+    background: linear-gradient(180deg, transparent 0%, rgba(76, 29, 149, 0.15) 100%) !important;
 }
 
 html[data-theme="light"] footer {
-    background: linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.06) 100%) !important;
+    background: linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.08) 100%) !important;
 }
 
 @media (max-width: 575.98px) {

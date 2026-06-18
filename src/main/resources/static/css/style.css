@@ -1,18 +1,18 @@
 /* Global Styles - Scandinavian Dark Theme */
 :root {
-    --primary-color: #0ea5e9;
-    --secondary-color: #64748b;
-    --success-color: #10b981;
+    --primary-color: #7C3AED;
+    --secondary-color: #6B5B80;
+    --success-color: #A855F7;
     --danger-color: #ef4444;
     --warning-color: #f59e0b;
-    --info-color: #06b6d4;
+    --info-color: #8B5CF6;
     --light-color: #f1f5f9;
     --dark-color: #1e293b;
     --darker-color: #0f172a;
     --border-radius: 0.5rem;
     --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --scandi-blue: #0ea5e9;
+    --scandi-blue: #7C3AED;
     --scandi-dark: #1a1a2e;
     --scandi-gray: #64748b;
     --scandi-light: #f8fafc;
@@ -778,28 +778,27 @@ footer a:hover {
 }
 
 /* =====================================================================
-   RUOMI — Тёплая тема сообщества (вариант 2: бирюза + коралл)
-   Загружается последней, поэтому переопределяет базовые стили выше.
+   RUOMI — Purple glass palette (synced with glass-theme.css)
    ===================================================================== */
 :root {
-    --warm-cream: #FBF7F0;
-    --warm-cream-2: #F4EEE3;
-    --warm-card: #FFFFFF;
-    --warm-teal: #0E7C66;
-    --warm-teal-dark: #0B5E4E;
-    --warm-coral: #EF6A52;
-    --warm-coral-dark: #E0573F;
-    --warm-green: #2E9E6B;
-    --warm-ink: #1F3D35;
-    --warm-muted: #6B7C75;
-    --warm-line: #ECE6DB;
-    --warm-shadow: 0 8px 24px rgba(31, 61, 53, 0.08);
-    --warm-shadow-lg: 0 16px 40px rgba(31, 61, 53, 0.14);
+    --warm-cream: #06040f;
+    --warm-cream-2: rgba(18, 14, 36, 0.75);
+    --warm-card: rgba(22, 16, 42, 0.58);
+    --warm-teal: #A78BFA;
+    --warm-teal-dark: #8B5CF6;
+    --warm-coral: #F472B6;
+    --warm-coral-dark: #EC4899;
+    --warm-green: #C084FC;
+    --warm-ink: #EDE9FE;
+    --warm-muted: #A89BC7;
+    --warm-line: rgba(167, 139, 250, 0.2);
+    --warm-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --warm-shadow-lg: 0 24px 60px rgba(76, 29, 149, 0.35);
     --warm-radius: 16px;
 }
 
 body {
-    background-color: var(--warm-cream) !important;
+    background: var(--body-gradient, linear-gradient(165deg, #04030a 0%, #0a0718 35%, #0f0a22 70%, #080612 100%)) !important;
     color: var(--warm-ink);
 }
 
@@ -846,7 +845,7 @@ nav.navbar.ruomi-navbar {
     background: rgba(255, 255, 255, 0.94) !important;
     backdrop-filter: saturate(160%) blur(10px);
     border-bottom: 1px solid var(--warm-line);
-    box-shadow: 0 1px 10px rgba(31, 61, 53, 0.04);
+    box-shadow: 0 1px 10px rgba(76, 29, 149, 0.04);
     padding: 0.35rem 0;
 }
 .ruomi-navbar > .container {
@@ -1233,30 +1232,30 @@ footer .text-muted { color: rgba(255,255,255,0.72) !important; }
    Активируется через <html data-theme="dark">.
    ===================================================================== */
 html[data-theme="dark"] {
-    --warm-cream: #0F1A17;
-    --warm-cream-2: #1A2A24;
-    --warm-card: #16241F;
-    --warm-ink: #E9F1ED;
-    --warm-muted: #9FB3AB;
-    --warm-line: #2A3D36;
-    --warm-teal: #2FB295;
-    --warm-teal-dark: #1F8C74;
-    --warm-coral: #F0775F;
-    --warm-coral-dark: #E0573F;
-    --warm-green: #38B07A;
-    --warm-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    --warm-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+    --warm-cream: #06040f;
+    --warm-cream-2: rgba(18, 14, 36, 0.75);
+    --warm-card: rgba(22, 16, 42, 0.58);
+    --warm-ink: #EDE9FE;
+    --warm-muted: #A89BC7;
+    --warm-line: rgba(167, 139, 250, 0.2);
+    --warm-teal: #A78BFA;
+    --warm-teal-dark: #8B5CF6;
+    --warm-coral: #F472B6;
+    --warm-coral-dark: #EC4899;
+    --warm-green: #C084FC;
+    --warm-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --warm-shadow-lg: 0 24px 60px rgba(76, 29, 149, 0.35);
     color-scheme: dark;
 }
 
 html[data-theme="dark"] body {
-    background-color: var(--warm-cream) !important;
+    background: var(--body-gradient) !important;
     color: var(--warm-ink);
 }
 
 /* Навбар */
 html[data-theme="dark"] nav.navbar.ruomi-navbar {
-    background: rgba(15, 26, 23, 0.92) !important;
+    background: rgba(10, 7, 24, 0.92) !important;
     border-bottom-color: var(--warm-line);
     box-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
 }
@@ -1300,7 +1299,7 @@ html[data-theme="dark"] .form-select:focus {
     background-color: var(--warm-cream-2);
     border-color: var(--warm-teal);
     color: var(--warm-ink);
-    box-shadow: 0 0 0 0.2rem rgba(47, 178, 149, 0.2);
+    box-shadow: 0 0 0 0.2rem rgba(167, 139, 250, 0.2);
 }
 html[data-theme="dark"] .input-group-text {
     background-color: var(--warm-cream-2);
@@ -1312,8 +1311,8 @@ html[data-theme="dark"] .form-check-label { color: var(--warm-ink); }
 
 /* Карточки/плитки нового дизайна */
 html[data-theme="dark"] .hero-search { background: var(--warm-card); }
-html[data-theme="dark"] .price-chip { background: rgba(15, 26, 23, 0.92); color: var(--warm-ink); }
-html[data-theme="dark"] .fav-btn { background: rgba(15, 26, 23, 0.85); color: var(--warm-muted); }
+html[data-theme="dark"] .price-chip { background: rgba(10, 7, 24, 0.92); color: var(--warm-ink); }
+html[data-theme="dark"] .fav-btn { background: rgba(10, 7, 24, 0.85); color: var(--warm-muted); }
 html[data-theme="dark"] .ad-card .ad-media,
 html[data-theme="dark"] .cat-tile { background: var(--warm-card); }
 /* Иконки категорий нарисованы на белом фоне — кладём их на светлую «плашку» */
@@ -1365,8 +1364,12 @@ html[data-theme="dark"] .ql-snow .ql-fill { fill: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-picker { color: var(--warm-ink); }
 html[data-theme="dark"] .ql-snow .ql-picker-options { background-color: var(--warm-card); }
 
-html[data-theme="dark"] .ruomi-telegram-section,
-html[data-theme="dark"] .ruomi-features-section { background: var(--warm-cream); }
+html[data-theme="dark"] .ruomi-telegram-section {
+    background: linear-gradient(135deg, rgba(91, 33, 182, 0.2) 0%, rgba(10, 7, 24, 0.6) 100%);
+}
+html[data-theme="dark"] .ruomi-features-section {
+    background: linear-gradient(180deg, rgba(76, 29, 149, 0.18) 0%, rgba(6, 4, 15, 0.85) 100%);
+}
 html[data-theme="dark"] .feature-card-warm,
 html[data-theme="dark"] .stat-card-warm,
 html[data-theme="dark"] .border-live-card,
@@ -1376,10 +1379,10 @@ html[data-theme="dark"] .border-lane-filter {
     border-color: var(--warm-line);
 }
 html[data-theme="dark"] .border-page-hero {
-    background: linear-gradient(135deg, rgba(47, 178, 149, 0.12), rgba(240, 119, 95, 0.08));
+    background: linear-gradient(135deg, rgba(91, 33, 182, 0.25), rgba(124, 58, 237, 0.12));
 }
 html[data-theme="dark"] .border-telegram-banner {
-    background: linear-gradient(135deg, rgba(47, 178, 149, 0.16) 0%, rgba(240, 119, 95, 0.1) 55%, rgba(15, 26, 23, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(91, 33, 182, 0.28) 0%, rgba(124, 58, 237, 0.15) 55%, rgba(10, 7, 24, 0.95) 100%);
     border-color: var(--warm-line);
 }
 html[data-theme="dark"] .border-telegram-mockup,
@@ -1445,15 +1448,15 @@ html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal);
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 1.25rem; margin-bottom: 0.75rem;
 }
-.stat-icon-teal { background: rgba(14, 124, 102, 0.12); color: var(--warm-teal); }
-.stat-icon-green { background: rgba(46, 158, 107, 0.12); color: var(--warm-green); }
+.stat-icon-teal { background: rgba(124, 58, 237, 0.15); color: var(--warm-teal); }
+.stat-icon-green { background: rgba(192, 132, 252, 0.15); color: var(--warm-green); }
 .stat-icon-coral { background: rgba(239, 106, 82, 0.12); color: var(--warm-coral); }
 .stat-value { font-size: 2rem; font-weight: 700; color: var(--warm-ink); line-height: 1.1; }
 .stat-label { color: var(--warm-muted); font-size: 0.95rem; margin-top: 0.35rem; }
 
 .section-kicker {
     display: inline-block;
-    background: rgba(14, 124, 102, 0.1);
+    background: rgba(124, 58, 237, 0.1);
     color: var(--warm-teal);
     font-weight: 600;
     font-size: 0.85rem;
@@ -1465,7 +1468,7 @@ html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal);
 .ruomi-section-lead { color: var(--warm-muted); font-size: 1.05rem; max-width: 540px; }
 
 .ruomi-telegram-section {
-    background: linear-gradient(135deg, rgba(14, 124, 102, 0.08) 0%, rgba(239, 106, 82, 0.06) 100%);
+    background: linear-gradient(135deg, rgba(91, 33, 182, 0.15) 0%, rgba(236, 72, 153, 0.08) 100%);
 }
 .ruomi-check-list { list-style: none; padding: 0; margin: 0; }
 .ruomi-check-list li {
@@ -1486,7 +1489,7 @@ html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal);
 .telegram-phone-header {
     display: flex; align-items: center; gap: 0.85rem;
     padding: 1rem 1.15rem;
-    background: linear-gradient(135deg, var(--warm-teal) 0%, #2E9E6B 100%);
+    background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 50%, #A855F7 100%);
     color: #fff;
 }
 .telegram-avatar {
@@ -1516,7 +1519,9 @@ html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal);
     background: #fff;
 }
 
-.ruomi-features-section { background: var(--warm-cream); }
+.ruomi-features-section {
+    background: linear-gradient(180deg, rgba(76, 29, 149, 0.12) 0%, rgba(10, 7, 24, 0.35) 100%);
+}
 .features-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -1536,8 +1541,9 @@ html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal);
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 1.35rem; margin-bottom: 1rem;
 }
-.feature-icon-teal { background: rgba(14, 124, 102, 0.12); color: var(--warm-teal); }
-.feature-icon-green { background: rgba(46, 158, 107, 0.12); color: var(--warm-green); }
+.feature-icon-teal { background: rgba(124, 58, 237, 0.15); color: var(--warm-teal); }
+.feature-icon-purple { background: rgba(192, 132, 252, 0.15); color: #C084FC; }
+.feature-icon-green { background: rgba(192, 132, 252, 0.15); color: #C084FC; }
 .feature-icon-coral { background: rgba(239, 106, 82, 0.12); color: var(--warm-coral); }
 .feature-card-warm h5 { font-size: 1rem; font-weight: 700; color: var(--warm-ink); margin-bottom: 0.5rem; }
 .feature-card-warm p { color: var(--warm-muted); font-size: 0.92rem; margin: 0; }
@@ -1562,7 +1568,7 @@ html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal);
 
 /* ---------- Border queues page ---------- */
 .border-page-hero {
-    background: linear-gradient(135deg, rgba(14, 124, 102, 0.12), rgba(239, 106, 82, 0.08));
+    background: linear-gradient(135deg, rgba(91, 33, 182, 0.2), rgba(124, 58, 237, 0.1));
     border-radius: var(--warm-radius);
     padding: 2rem 1.5rem;
     margin-bottom: 1.5rem;
@@ -1646,22 +1652,22 @@ button.border-lane-btn {
     font-family: inherit;
 }
 button.border-lane-btn:hover:not(.active) {
-    background: rgba(14, 124, 102, 0.1);
+    background: rgba(124, 58, 237, 0.1);
     color: var(--warm-teal);
 }
 button.border-lane-btn.active {
     background: var(--warm-teal) !important;
     color: #fff !important;
-    box-shadow: 0 4px 14px rgba(14, 124, 102, 0.38);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.38);
     transform: translateY(-1px);
 }
 button.border-lane-btn:focus-visible {
-    box-shadow: 0 0 0 3px rgba(14, 124, 102, 0.25);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
 }
 
 .border-telegram-banner {
-    background: linear-gradient(135deg, rgba(14, 124, 102, 0.14) 0%, rgba(239, 106, 82, 0.1) 55%, rgba(255, 255, 255, 0.6) 100%);
-    border: 1px solid rgba(14, 124, 102, 0.2);
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.14) 0%, rgba(239, 106, 82, 0.1) 55%, rgba(255, 255, 255, 0.6) 100%);
+    border: 1px solid rgba(124, 58, 237, 0.2);
     border-radius: calc(var(--warm-radius) + 4px);
     padding: 2rem 1.75rem;
     box-shadow: var(--warm-shadow);
@@ -1691,7 +1697,7 @@ button.border-lane-btn:focus-visible {
     background: #fff;
     border-radius: 20px;
     border: 1px solid var(--warm-line);
-    box-shadow: 0 12px 40px rgba(14, 124, 102, 0.12);
+    box-shadow: 0 12px 40px rgba(124, 58, 237, 0.12);
     overflow: hidden;
 }
 .border-telegram-mockup-header {
@@ -1814,7 +1820,7 @@ button.border-lane-btn:focus-visible {
 }
 .ad-detail-badge.premium { background: rgba(255, 215, 0, 0.15); color: #9a7b00; border-color: rgba(255, 215, 0, 0.35); }
 .ad-detail-badge.urgent { background: rgba(239, 106, 82, 0.12); color: var(--warm-coral-dark); border-color: rgba(239, 106, 82, 0.25); }
-.ad-detail-badge.category { background: rgba(14, 124, 102, 0.1); color: var(--warm-teal); border-color: rgba(14, 124, 102, 0.2); }
+.ad-detail-badge.category { background: rgba(124, 58, 237, 0.1); color: var(--warm-teal); border-color: rgba(124, 58, 237, 0.2); }
 
 .ad-detail-title {
     font-size: clamp(1.25rem, 2.5vw, 1.65rem);
@@ -1833,7 +1839,7 @@ button.border-lane-btn:focus-visible {
     padding: 0.35rem 0.9rem;
     border-radius: 999px;
     line-height: 1.2;
-    box-shadow: 0 4px 14px rgba(14, 124, 102, 0.25);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);
 }
 .ad-detail-price.muted {
     background: var(--warm-cream-2);
@@ -1906,8 +1912,8 @@ button.border-lane-btn:focus-visible {
     margin-top: 1.25rem;
     padding: 1rem 1.1rem;
     border-radius: var(--warm-radius);
-    background: rgba(14, 124, 102, 0.07);
-    border: 1px solid rgba(14, 124, 102, 0.15);
+    background: rgba(124, 58, 237, 0.07);
+    border: 1px solid rgba(124, 58, 237, 0.15);
     font-size: 0.875rem;
 }
 .ad-detail-subscribe h6 {
@@ -1969,8 +1975,8 @@ html[data-theme="dark"] .ad-seller-card {
     border-color: var(--warm-line);
 }
 html[data-theme="dark"] .ad-detail-subscribe {
-    background: rgba(47, 178, 149, 0.08);
-    border-color: rgba(47, 178, 149, 0.2);
+    background: rgba(167, 139, 250, 0.08);
+    border-color: rgba(167, 139, 250, 0.2);
 }
 
 @media (max-width: 991px) {
@@ -2006,7 +2012,7 @@ html[data-theme="dark"] .ad-detail-subscribe {
         background: rgba(255, 255, 255, 0.96);
         backdrop-filter: saturate(180%) blur(12px);
         border-top: 1px solid var(--warm-line);
-        box-shadow: 0 -4px 20px rgba(31, 61, 53, 0.08);
+        box-shadow: 0 -4px 20px rgba(76, 29, 149, 0.08);
     }
     .ruomi-mobile-bottom-item {
         flex: 1;
@@ -2030,7 +2036,7 @@ html[data-theme="dark"] .ad-detail-subscribe {
     }
     .ruomi-mobile-bottom-item.active {
         color: var(--warm-teal);
-        background: rgba(14, 124, 102, 0.08);
+        background: rgba(124, 58, 237, 0.08);
     }
     .ruomi-mobile-bottom-fab {
         flex: 0 0 auto;
@@ -2168,17 +2174,17 @@ html[data-theme="dark"] .ad-detail-subscribe {
 }
 
 html[data-theme="dark"] .ruomi-mobile-bottom {
-    background: rgba(15, 26, 23, 0.96);
+    background: rgba(10, 7, 24, 0.96);
     border-top-color: var(--warm-line);
 }
 html[data-theme="dark"] .ruomi-mobile-bottom-item.active {
-    background: rgba(47, 178, 149, 0.12);
+    background: rgba(124, 58, 237, 0.18);
     color: var(--warm-teal);
 }
 
 /* Заголовок страницы (список объявлений и др.) */
 .ruomi-page-header {
-    background: linear-gradient(110deg, var(--warm-teal) 0%, var(--warm-green) 100%);
+    background: linear-gradient(110deg, #5B21B6 0%, #7C3AED 50%, #A855F7 100%);
     color: #fff;
 }
 .ruomi-page-header h1,
