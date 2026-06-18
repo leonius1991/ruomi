@@ -224,6 +224,22 @@ chmod +x $APP_DIR/restart.sh
 chown $APP_NAME:$APP_NAME $APP_DIR/restart.sh
 info "Скрипт перезапуска создан"
 
+# Копирование скрипта обновления
+info "Установка скрипта обновления..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+UPDATE_GITHUB_OWNER="${GITHUB_OWNER:-leonius1991}"
+UPDATE_GITHUB_REPO="${GITHUB_REPO:-ruomi}"
+if [ -f "$SCRIPT_DIR/update.sh" ]; then
+    cp "$SCRIPT_DIR/update.sh" "$APP_DIR/update.sh"
+else
+    curl -fsSL "https://raw.githubusercontent.com/${UPDATE_GITHUB_OWNER}/${UPDATE_GITHUB_REPO}/main/update.sh" \
+        -o "$APP_DIR/update.sh" 2>/dev/null \
+        || warn "update.sh не найден — скопируйте вручную в $APP_DIR/update.sh"
+fi
+chmod +x "$APP_DIR/update.sh" 2>/dev/null || true
+chown $APP_NAME:$APP_NAME "$APP_DIR/update.sh" 2>/dev/null || true
+info "Скрипт обновления: $APP_DIR/update.sh"
+
 # Создание systemd сервиса
 info "Создание systemd сервиса..."
 cat > /etc/systemd/system/${APP_NAME}.service <<EOF
@@ -280,6 +296,7 @@ echo "  База данных: $DB_NAME"
 echo "  Пользователь БД: $DB_USER"
 echo
 echo "Команды управления:"
+echo "  Обновление: sudo bash $APP_DIR/update.sh"
 echo "  Запуск:   sudo systemctl start $APP_NAME"
 echo "  Остановка: sudo systemctl stop $APP_NAME"
 echo "  Статус:   sudo systemctl status $APP_NAME"
