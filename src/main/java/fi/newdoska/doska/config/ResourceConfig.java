@@ -19,27 +19,24 @@ public class ResourceConfig implements WebMvcConfigurer {
     
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Внешние ресурсы (если включены) имеют приоритет
         if (useExternalResources) {
             Path externalPath = Paths.get(externalResourcesPath).toAbsolutePath().normalize();
-            
-            // Статические файлы (CSS, JS, изображения)
-            registry.addResourceHandler("/css/**", "/js/**", "/images/**")
-                    .addResourceLocations(
-                            "file:" + externalPath.resolve("static/css/") + "/",
-                            "file:" + externalPath.resolve("static/js/") + "/",
-                            "file:" + externalPath.resolve("static/images/") + "/",
-                            "classpath:/static/css/",
-                            "classpath:/static/js/",
-                            "classpath:/static/images/"
-                    )
-                    .setCachePeriod(0); // Отключаем кеширование
-            
-            // HTML шаблоны (если нужно редактировать на лету)
-            // Thymeleaf будет искать сначала во внешней папке, потом в classpath
+            String external = "file:" + externalPath.resolve("static").toString().replace("\\", "/") + "/";
+            String classpath = "classpath:/static/";
+
+            registry.addResourceHandler("/css/**")
+                    .addResourceLocations(external + "css/", classpath + "css/")
+                    .setCachePeriod(0);
+            registry.addResourceHandler("/js/**")
+                    .addResourceLocations(external + "js/", classpath + "js/")
+                    .setCachePeriod(0);
+            registry.addResourceHandler("/images/**")
+                    .addResourceLocations(external + "images/", classpath + "images/")
+                    .setCachePeriod(0);
+            registry.addResourceHandler("/data/**")
+                    .addResourceLocations(external + "data/", classpath + "data/")
+                    .setCachePeriod(0);
         }
-        
-        // Всегда отключаем кеширование для статических ресурсов
     }
     
 }
