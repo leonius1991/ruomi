@@ -24,21 +24,22 @@ public class BorderQueueController {
     public String page(Model model) throws JsonProcessingException {
         BorderQueueTrackerService.BorderQueueDashboard dashboard = trackerService.getDashboard();
         model.addAttribute("dashboard", dashboard);
-        model.addAttribute("dailyExitsJson", objectMapper.writeValueAsString(dashboard.dailyExits()));
+        model.addAttribute("laneStatsJson", objectMapper.writeValueAsString(dashboard.laneStats()));
+        model.addAttribute("defaultLane", BorderQueueTrackerService.DEFAULT_LANE);
         model.addAttribute("pageTitle", "Очередь на границе — Koidula и Luhamaa | ruomi.fi");
         return "border-queues";
     }
 
     @GetMapping("/api/border-queues/stats")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> statsApi() {
+    public ResponseEntity<Map<String, Object>> statsApi() throws JsonProcessingException {
         BorderQueueTrackerService.BorderQueueDashboard d = trackerService.getDashboard();
         Map<String, Object> body = new HashMap<>();
         body.put("koidulaLive", d.koidulaLive());
         body.put("luhamaaLive", d.luhamaaLive());
         body.put("koidulaToday", d.koidulaToday());
         body.put("luhamaaToday", d.luhamaaToday());
-        body.put("dailyExits", d.dailyExits());
+        body.put("laneStats", d.laneStats());
         body.put("lastUpdate", d.lastUpdate());
         return ResponseEntity.ok(body);
     }

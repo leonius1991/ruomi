@@ -15,11 +15,11 @@ public interface BorderQueueEventRepository extends JpaRepository<BorderQueueEve
     List<BorderQueueEvent> findByRecordedAtAfterOrderByRecordedAtAsc(LocalDateTime after);
 
     @Query(value = """
-            SELECT checkpoint, DATE(recorded_at) AS day, SUM(delta) AS total
+            SELECT checkpoint, lane, DATE(recorded_at) AS day, SUM(delta) AS total
             FROM border_queue_events
             WHERE event_type = 'EXIT' AND recorded_at >= :from
-            GROUP BY checkpoint, DATE(recorded_at)
+            GROUP BY checkpoint, lane, DATE(recorded_at)
             ORDER BY day ASC
             """, nativeQuery = true)
-    List<Object[]> sumDailyExitsSince(@Param("from") LocalDateTime from);
+    List<Object[]> sumDailyExitsByLaneSince(@Param("from") LocalDateTime from);
 }

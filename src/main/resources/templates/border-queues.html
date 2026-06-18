@@ -13,9 +13,51 @@
 <div th:replace="~{fragments/navbar :: nav}"></div>
 
 <main class="container py-4">
+    <!-- Telegram bot promo -->
+    <section class="border-telegram-banner mb-4">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="border-telegram-kicker"><i class="fab fa-telegram me-2"></i>Telegram-бот</span>
+                <h2 class="border-telegram-title mb-3">Свободные слоты на запись в очередь</h2>
+                <p class="border-telegram-lead mb-4">
+                    Бот <strong>@checkdateborder_bot</strong> отслеживает появление свободных дат для записи на границах
+                    Koidula и Luhamaa — получайте уведомления, как только открывается окно для бронирования.
+                </p>
+                <ul class="ruomi-check-list border-telegram-features mb-4">
+                    <li><i class="fas fa-bell"></i>Мгновенные уведомления о свободных слотах</li>
+                    <li><i class="fas fa-calendar-check"></i>Koidula и Luhamaa — все категории</li>
+                    <li><i class="fas fa-clock"></i>Работает круглосуточно, без ручного обновления сайта</li>
+                </ul>
+                <a href="https://t.me/checkdateborder_bot" class="btn btn-coral btn-lg px-4" target="_blank" rel="noopener">
+                    <i class="fab fa-telegram me-2"></i>Открыть @checkdateborder_bot
+                </a>
+            </div>
+            <div class="col-lg-5">
+                <div class="border-telegram-mockup">
+                    <div class="border-telegram-mockup-header">
+                        <div class="border-telegram-avatar"><i class="fab fa-telegram"></i></div>
+                        <div>
+                            <strong>Check Date Border</strong>
+                            <small>@checkdateborder_bot</small>
+                        </div>
+                    </div>
+                    <div class="border-telegram-mockup-body">
+                        <p class="telegram-bubble">🔔 Свободный слот на Koidula (A/B) — 22.06.2026 14:00</p>
+                        <p class="telegram-bubble">✅ Запись доступна на Luhamaa (BC) — 23.06.2026 09:30</p>
+                        <div class="border-telegram-mockup-actions">
+                            <span><i class="fas fa-bell me-2"></i>Подписаться на Koidula</span>
+                            <span><i class="fas fa-bell me-2"></i>Подписаться на Luhamaa</span>
+                            <span><i class="fas fa-cog me-2"></i>Настройки категорий</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div class="border-page-hero">
         <span class="section-kicker"><i class="fas fa-road me-2"></i>Estonia ↔ Россия</span>
-        <h1 class="ruomi-section-title mb-2">Очередь на границе</h1>
+        <h1 class="ruomi-section-title mb-2">Live queue — статистика проезда</h1>
         <p class="text-muted mb-0">
             Данные с <a href="https://www.estonianborder.eu/yphis/borderQueueInfo.action" target="_blank" rel="noopener">estonianborder.eu</a>.
             Когда live queue уменьшается — фиксируем примерное число проехавших машин.
@@ -25,30 +67,42 @@
         </p>
     </div>
 
+    <div class="border-lane-filter mb-4">
+        <span class="border-lane-filter-label">Категория полосы:</span>
+        <div class="border-lane-filter-btns" id="laneFilter">
+            <button type="button" class="border-lane-btn active" data-lane="A/B">A/B</button>
+            <button type="button" class="border-lane-btn" data-lane="BC">BC</button>
+            <button type="button" class="border-lane-btn" data-lane="C">C</button>
+            <button type="button" class="border-lane-btn" data-lane="CE">CE</button>
+            <button type="button" class="border-lane-btn" data-lane="D">D</button>
+            <button type="button" class="border-lane-btn" data-lane="ALL">Все</button>
+        </div>
+    </div>
+
     <div class="border-live-grid">
         <div class="border-live-card">
             <h3><i class="fas fa-map-marker-alt me-2" style="color:var(--warm-teal)"></i>Koidula (Койдула)</h3>
             <div class="border-live-count" id="koidulaLive" th:text="${dashboard.koidulaLive}">0</div>
-            <div class="border-live-meta">сейчас в live queue (все полосы)</div>
+            <div class="border-live-meta">сейчас в live queue · <span id="laneLabel">A/B</span></div>
             <div class="mt-2"><span class="badge rounded-pill" style="background:rgba(14,124,102,.12);color:var(--warm-teal);">
-                Сегодня проехало ≈ <span th:text="${dashboard.koidulaToday}">0</span>
+                Сегодня проехало ≈ <span id="koidulaToday" th:text="${dashboard.koidulaToday}">0</span>
             </span></div>
         </div>
         <div class="border-live-card">
             <h3><i class="fas fa-map-marker-alt me-2" style="color:var(--warm-coral)"></i>Luhamaa (Лухамаа)</h3>
             <div class="border-live-count" style="color:var(--warm-coral)" id="luhamaaLive" th:text="${dashboard.luhamaaLive}">0</div>
-            <div class="border-live-meta">сейчас в live queue (все полосы)</div>
+            <div class="border-live-meta">сейчас в live queue · <span id="laneLabel2">A/B</span></div>
             <div class="mt-2"><span class="badge rounded-pill" style="background:rgba(239,106,82,.12);color:var(--warm-coral);">
-                Сегодня проехало ≈ <span th:text="${dashboard.luhamaaToday}">0</span>
+                Сегодня проехало ≈ <span id="luhamaaToday" th:text="${dashboard.luhamaaToday}">0</span>
             </span></div>
         </div>
     </div>
 
     <div class="border-chart-card">
-        <h4 class="mb-3"><i class="fas fa-chart-column me-2"></i>Оценка пропуска по дням</h4>
+        <h4 class="mb-3"><i class="fas fa-chart-column me-2"></i>Оценка пропуска по дням · <span id="chartLaneLabel">A/B</span></h4>
         <canvas id="dailyChart" height="110"></canvas>
         <p class="text-muted small mt-3 mb-0">
-            График строится по уменьшению live queue. Это приблизительная оценка, не официальная статистика погранслужбы.
+            График строится по уменьшению live queue для выбранной категории. Это приблизительная оценка, не официальная статистика погранслужбы.
         </p>
     </div>
 
@@ -75,14 +129,15 @@
         </div>
         <div class="col-lg-6">
             <div class="border-chart-card h-100">
-                <h5 class="mb-3">Последние изменения</h5>
+                <h5 class="mb-3">Последние изменения · <span id="eventsLaneLabel">A/B</span></h5>
                 <div class="table-responsive" style="max-height:320px;overflow:auto;">
                     <table class="table table-sm border-lanes-table mb-0">
                         <thead><tr><th>Время</th><th>КПП</th><th>Событие</th><th class="text-end">Δ</th></tr></thead>
-                        <tbody>
-                        <tr th:each="e : ${dashboard.recentEvents}">
+                        <tbody id="eventsBody">
+                        <tr th:each="e : ${dashboard.recentEvents}" th:attr="data-lane=${e.lane}"
+                            th:classappend="${e.lane != 'A/B'} ? 'd-none event-row-hidden' : ''">
                             <td th:text="${#temporals.format(e.recordedAt, 'dd.MM HH:mm')}">—</td>
-                            <td th:text="${e.checkpoint}">—</td>
+                            <td th:text="${e.checkpoint == 'KOIDULA' ? 'Koidula' : 'Luhamaa'}">—</td>
                             <td>
                                 <span th:if="${e.eventType.name() == 'EXIT'}" class="text-success">Проезд</span>
                                 <span th:if="${e.eventType.name() == 'ENTER'}" class="text-warning">Въезд в очередь</span>
@@ -90,7 +145,7 @@
                             </td>
                             <td class="text-end" th:text="${e.delta}">0</td>
                         </tr>
-                        <tr th:if="${#lists.isEmpty(dashboard.recentEvents)}">
+                        <tr id="eventsEmpty" th:if="${#lists.isEmpty(dashboard.recentEvents)}">
                             <td colspan="4" class="text-muted">Событий пока нет</td>
                         </tr>
                         </tbody>
@@ -104,24 +159,89 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script th:inline="javascript">
-    const dailyExits = JSON.parse(/*[[${dailyExitsJson}]]*/ '{}');
-    const labels = [...new Set([
-        ...Object.keys(dailyExits.KOIDULA || {}),
-        ...Object.keys(dailyExits.LUHAMAA || {})
-    ])].sort();
+    const laneStats = JSON.parse(/*[[${laneStatsJson}]]*/ '{}');
+    let activeLane = /*[[${defaultLane}]]*/ 'A/B';
+    let dailyChart = null;
 
-    const koidulaData = labels.map(d => (dailyExits.KOIDULA && dailyExits.KOIDULA[d]) || 0);
-    const luhamaaData = labels.map(d => (dailyExits.LUHAMAA && dailyExits.LUHAMAA[d]) || 0);
+    function liveFor(lane, checkpoint) {
+        if (lane === 'ALL') {
+            return Object.values(laneStats.liveByLane || {}).reduce((sum, m) => sum + (m[checkpoint] || 0), 0);
+        }
+        return (laneStats.liveByLane?.[lane]?.[checkpoint]) || 0;
+    }
+
+    function todayFor(lane, checkpoint) {
+        if (lane === 'ALL') {
+            return Object.values(laneStats.todayExitsByLane || {}).reduce((sum, m) => sum + (m[checkpoint] || 0), 0);
+        }
+        return (laneStats.todayExitsByLane?.[lane]?.[checkpoint]) || 0;
+    }
+
+    function dailyFor(lane, checkpoint) {
+        if (lane === 'ALL') {
+            const merged = {};
+            Object.values(laneStats.dailyExitsByLane || {}).forEach(byCp => {
+                const days = byCp?.[checkpoint] || {};
+                Object.entries(days).forEach(([day, total]) => { merged[day] = (merged[day] || 0) + total; });
+            });
+            return merged;
+        }
+        return laneStats.dailyExitsByLane?.[lane]?.[checkpoint] || {};
+    }
+
+    function laneLabel(lane) {
+        return lane === 'ALL' ? 'все полосы' : lane;
+    }
+
+    function updateDashboard(lane) {
+        activeLane = lane;
+        document.getElementById('koidulaLive').textContent = liveFor(lane, 'KOIDULA');
+        document.getElementById('luhamaaLive').textContent = liveFor(lane, 'LUHAMAA');
+        document.getElementById('koidulaToday').textContent = todayFor(lane, 'KOIDULA');
+        document.getElementById('luhamaaToday').textContent = todayFor(lane, 'LUHAMAA');
+        const label = laneLabel(lane);
+        document.getElementById('laneLabel').textContent = label;
+        document.getElementById('laneLabel2').textContent = label;
+        document.getElementById('chartLaneLabel').textContent = label;
+        document.getElementById('eventsLaneLabel').textContent = label;
+
+        document.querySelectorAll('#laneFilter .border-lane-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lane === lane);
+        });
+
+        const kDaily = dailyFor(lane, 'KOIDULA');
+        const lDaily = dailyFor(lane, 'LUHAMAA');
+        const labels = [...new Set([...Object.keys(kDaily), ...Object.keys(lDaily)])].sort();
+        const koidulaData = labels.map(d => kDaily[d] || 0);
+        const luhamaaData = labels.map(d => lDaily[d] || 0);
+
+        if (dailyChart) {
+            dailyChart.data.labels = labels;
+            dailyChart.data.datasets[0].data = koidulaData;
+            dailyChart.data.datasets[1].data = luhamaaData;
+            dailyChart.update();
+        }
+
+        document.querySelectorAll('#eventsBody tr[data-lane]').forEach(row => {
+            const rowLane = row.getAttribute('data-lane');
+            const show = lane === 'ALL' || rowLane === lane;
+            row.classList.toggle('d-none', !show);
+        });
+    }
 
     const ctx = document.getElementById('dailyChart');
     if (ctx) {
-        new Chart(ctx, {
+        const kDaily = dailyFor(activeLane, 'KOIDULA');
+        const lDaily = dailyFor(activeLane, 'LUHAMAA');
+        const labels = [...new Set([...Object.keys(kDaily), ...Object.keys(lDaily)])].sort();
+
+        dailyChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Koidula', data: koidulaData, backgroundColor: 'rgba(14, 124, 102, 0.75)', borderRadius: 8 },
-                    { label: 'Luhamaa', data: luhamaaData, backgroundColor: 'rgba(239, 106, 82, 0.75)', borderRadius: 8 }
+                    { label: 'Koidula', data: labels.map(d => kDaily[d] || 0), backgroundColor: 'rgba(14, 124, 102, 0.75)', borderRadius: 8 },
+                    { label: 'Luhamaa', data: labels.map(d => lDaily[d] || 0), backgroundColor: 'rgba(239, 106, 82, 0.75)', borderRadius: 8 }
                 ]
             },
             options: {
@@ -132,13 +252,19 @@
         });
     }
 
+    document.getElementById('laneFilter')?.addEventListener('click', e => {
+        const btn = e.target.closest('.border-lane-btn');
+        if (!btn) return;
+        updateDashboard(btn.dataset.lane);
+    });
+
     setInterval(async () => {
         try {
             const r = await fetch('/api/border-queues/stats');
             if (!r.ok) return;
             const data = await r.json();
-            document.getElementById('koidulaLive').textContent = data.koidulaLive;
-            document.getElementById('luhamaaLive').textContent = data.luhamaaLive;
+            Object.assign(laneStats, data.laneStats);
+            updateDashboard(activeLane);
         } catch (_) {}
     }, 180000);
 </script>

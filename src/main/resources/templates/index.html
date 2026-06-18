@@ -296,13 +296,35 @@
     <!-- Border queues promo -->
     <section class="py-4">
         <div class="container">
-            <div class="border-promo-card">
-                <div>
-                    <span class="section-kicker"><i class="fas fa-car me-2"></i>Граница Estonia ↔ Россия</span>
-                    <h3 class="mb-2">Очередь на Койдула и Лухамаа</h3>
-                    <p class="mb-0 text-muted">Живая статистика очереди и оценка пропуска машин по дням — данные обновляются автоматически.</p>
+            <div class="border-telegram-banner">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-8">
+                        <span class="border-telegram-kicker"><i class="fab fa-telegram me-2"></i>Граница Estonia ↔ Россия</span>
+                        <h3 class="border-telegram-title mb-2">Свободные слоты на запись — @checkdateborder_bot</h3>
+                        <p class="border-telegram-lead mb-3">
+                            Telegram-бот следит за появлением свободных дат на Koidula и Luhamaa и присылает уведомление,
+                            как только открывается окно для бронирования очереди.
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="https://t.me/checkdateborder_bot" class="btn btn-coral" target="_blank" rel="noopener">
+                                <i class="fab fa-telegram me-2"></i>@checkdateborder_bot
+                            </a>
+                            <a href="/border-queues" class="btn btn-teal">
+                                Live queue и статистика <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <div class="border-live-card d-inline-block text-start" style="min-width:220px;">
+                            <div class="small text-muted mb-1">Сейчас в очереди (A/B)</div>
+                            <div class="d-flex justify-content-between gap-3">
+                                <div><strong>Koidula</strong><div class="border-live-count" style="font-size:1.75rem;">—</div></div>
+                                <div><strong>Luhamaa</strong><div class="border-live-count" style="font-size:1.75rem;color:var(--warm-coral);">—</div></div>
+                            </div>
+                            <div class="small text-muted mt-2">Подробнее на странице статистики</div>
+                        </div>
+                    </div>
                 </div>
-                <a href="/border-queues" class="btn btn-teal">Смотреть статистику <i class="fas fa-arrow-right ms-2"></i></a>
             </div>
         </div>
     </section>

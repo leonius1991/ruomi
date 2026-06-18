@@ -19,6 +19,9 @@ import java.util.*;
 @Slf4j
 public class BorderQueueTrackerService {
 
+    public static final String DEFAULT_LANE = "A/B";
+    public static final List<String> LANES = List.of("A/B", "BC", "C", "CE", "D");
+
     private final EstonianBorderQueueParser parser;
     private final BorderQueueSnapshotRepository snapshotRepository;
     private final BorderQueueEventRepository eventRepository;
@@ -91,22 +94,12 @@ public class BorderQueueTrackerService {
 
     public BorderQueueDashboard getDashboard() {
         List<BorderQueueSnapshot> latestLanes = snapshotRepository.findLatestPerLane();
-        int koidulaLive = sumCheckpoint(latestLanes, "KOIDULA");
-        int luhamaaLive = sumCheckpoint(latestLanes, "LUHAMAA");
+        BorderLaneStats laneStats = buildLaneStats(latestLanes);
 
-        LocalDateTime from = LocalDate.now().minusDays(13).atStartOfDay();
-        List<Object[]> dailyRows = eventRepository.sumDailyExitsSince(from);
-
-        Map<String, Map<String, Long>> dailyByCheckpoint = new TreeMap<>();
-        for (Object[] row : dailyRows) {
-            String checkpoint = String.valueOf(row[0]);
-            String day = String.valueOf(row[1]);
-            long total = ((Number) row[2]).longValue();
-            dailyByCheckpoint.computeIfAbsent(checkpoint, k -> new TreeMap<>()).put(day, total);
-        }
-
-        long koidulaToday = exitsToday("KOIDULA");
-        long luhamaaToday = exitsToday("LUHAMAA");
+        int koidulaLive = laneStats.liveFor(DEFAULT_LANE, "KOIDULA");
+        int luhamaaLive = laneStats.liveFor(DEFAULT_LANE, "LUHAMAA");
+        long koidulaToday = laneStats.todayFor(DEFAULT_LANE, "KOIDULA");
+        long luhamaaToday = laneStats.todayFor(DEFAULT_LANE, "LUHAMAA");
 
         LocalDateTime lastUpdate = latestLanes.stream()
                 .map(BorderQueueSnapshot::getCapturedAt)
@@ -119,26 +112,81 @@ public class BorderQueueTrackerService {
                 koidulaToday,
                 luhamaaToday,
                 latestLanes,
-                dailyByCheckpoint,
+                laneStats,
                 eventRepository.findTop50ByOrderByRecordedAtDesc(),
                 lastUpdate
         );
     }
 
-    private long exitsToday(String checkpoint) {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        return eventRepository.findByRecordedAtAfterOrderByRecordedAtAsc(start).stream()
-                .filter(e -> e.getCheckpoint().equals(checkpoint))
-                .filter(e -> e.getEventType() == BorderQueueEvent.EventType.EXIT)
-                .mapToLong(BorderQueueEvent::getDelta)
-                .sum();
+    private BorderLaneStats buildLaneStats(List<BorderQueueSnapshot> latestLanes) {
+        Map<String, Map<String, Integer>> live = new LinkedHashMap<>();
+        for (BorderQueueSnapshot snapshot : latestLanes) {
+            live.computeIfAbsent(snapshot.getLane(), k -> new LinkedHashMap<>())
+                    .put(snapshot.getCheckpoint(), snapshot.getLiveCount());
+        }
+
+        LocalDateTime from = LocalDate.now().minusDays(13).atStartOfDay();
+        Map<String, Map<String, Map<String, Long>>> daily = new LinkedHashMap<>();
+        for (Object[] row : eventRepository.sumDailyExitsByLaneSince(from)) {
+            String checkpoint = String.valueOf(row[0]);
+            String lane = String.valueOf(row[1]);
+            String day = String.valueOf(row[2]);
+            long total = ((Number) row[3]).longValue();
+            daily.computeIfAbsent(lane, k -> new LinkedHashMap<>())
+                    .computeIfAbsent(checkpoint, k -> new TreeMap<>())
+                    .put(day, total);
+        }
+
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        Map<String, Map<String, Long>> today = new LinkedHashMap<>();
+        for (BorderQueueEvent event : eventRepository.findByRecordedAtAfterOrderByRecordedAtAsc(startOfDay)) {
+            if (event.getEventType() != BorderQueueEvent.EventType.EXIT) {
+                continue;
+            }
+            today.computeIfAbsent(event.getLane(), k -> new LinkedHashMap<>())
+                    .merge(event.getCheckpoint(), (long) event.getDelta(), Long::sum);
+        }
+
+        return new BorderLaneStats(live, daily, today);
     }
 
-    private int sumCheckpoint(List<BorderQueueSnapshot> snapshots, String checkpoint) {
-        return snapshots.stream()
-                .filter(s -> checkpoint.equals(s.getCheckpoint()))
-                .mapToInt(BorderQueueSnapshot::getLiveCount)
-                .sum();
+    public record BorderLaneStats(
+            Map<String, Map<String, Integer>> liveByLane,
+            Map<String, Map<String, Map<String, Long>>> dailyExitsByLane,
+            Map<String, Map<String, Long>> todayExitsByLane
+    ) {
+        public int liveFor(String lane, String checkpoint) {
+            if ("ALL".equals(lane)) {
+                return liveByLane.values().stream()
+                        .mapToInt(m -> m.getOrDefault(checkpoint, 0))
+                        .sum();
+            }
+            return liveByLane.getOrDefault(lane, Map.of()).getOrDefault(checkpoint, 0);
+        }
+
+        public long todayFor(String lane, String checkpoint) {
+            if ("ALL".equals(lane)) {
+                return todayExitsByLane.values().stream()
+                        .mapToLong(m -> m.getOrDefault(checkpoint, 0L))
+                        .sum();
+            }
+            return todayExitsByLane.getOrDefault(lane, Map.of()).getOrDefault(checkpoint, 0L);
+        }
+
+        public Map<String, Long> dailyForCheckpoint(String lane, String checkpoint) {
+            if ("ALL".equals(lane)) {
+                Map<String, Long> merged = new TreeMap<>();
+                for (Map<String, Map<String, Long>> byCheckpoint : dailyExitsByLane.values()) {
+                    Map<String, Long> days = byCheckpoint.get(checkpoint);
+                    if (days == null) {
+                        continue;
+                    }
+                    days.forEach((day, total) -> merged.merge(day, total, Long::sum));
+                }
+                return merged;
+            }
+            return dailyExitsByLane.getOrDefault(lane, Map.of()).getOrDefault(checkpoint, Map.of());
+        }
     }
 
     public record BorderQueueDashboard(
@@ -147,7 +195,7 @@ public class BorderQueueTrackerService {
             long koidulaToday,
             long luhamaaToday,
             List<BorderQueueSnapshot> latestLanes,
-            Map<String, Map<String, Long>> dailyExits,
+            BorderLaneStats laneStats,
             List<BorderQueueEvent> recentEvents,
             LocalDateTime lastUpdate
     ) {}
