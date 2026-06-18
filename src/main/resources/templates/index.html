@@ -329,64 +329,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <h5 class="mb-3 text-uppercase">
-                        <i class="fas fa-bullhorn me-2"></i>ruomi.fi
-                    </h5>
-                    <p class="text-muted">
-                        Современная доска объявлений для русскоязычного населения в Финляндии. 
-                        Мы помогаем людям находить друг друга и обмениваться товарами и услугами.
-                    </p>
-                    <div class="social-links">
-                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-telegram"></i></a>
-                        <a href="#" class="text-white me-3"><i class="fab fa-vk"></i></a>
-                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h6 class="mb-3">Категории</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="/advertisements?category=REAL_ESTATE" class="text-muted text-decoration-none">Недвижимость</a></li>
-                        <li><a href="/advertisements?category=VEHICLES" class="text-muted text-decoration-none">Транспорт</a></li>
-                        <li><a href="/advertisements?category=ELECTRONICS" class="text-muted text-decoration-none">Электроника</a></li>
-                        <li><a href="/advertisements?category=SERVICES" class="text-muted text-decoration-none">Услуги</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h6 class="mb-3">Информация</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="/about" class="text-muted text-decoration-none">О нас</a></li>
-                        <li><a href="/contact" class="text-muted text-decoration-none">Контакты</a></li>
-                        <li><a href="/support" class="text-muted text-decoration-none">Написать в поддержку</a></li>
-                        <li><a href="/border-queues" class="text-muted text-decoration-none">Очередь на границе</a></li>
-                        <li><a href="/help" class="text-muted text-decoration-none">Помощь</a></li>
-                        <li><a href="/terms" class="text-muted text-decoration-none">Условия использования</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-4 mb-4">
-                    <h6 class="mb-3">Подписка на новости</h6>
-                    <p class="text-muted">Получайте уведомления о новых объявлениях в интересующих вас категориях</p>
-                    <form class="d-flex">
-                        <input type="email" class="form-control me-2" placeholder="Ваш email">
-                        <button type="submit" class="btn btn-primary">Подписаться</button>
-                    </form>
-                </div>
-            </div>
-            <hr class="my-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <p class="mb-0 text-muted text-uppercase">&copy; 2024 ruomi.fi. Все права защищены.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="mb-0 text-muted">Сделано с <i class="fas fa-heart text-danger"></i> в Финляндии</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div th:replace="~{fragments/site-footer :: site-footer}"></div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

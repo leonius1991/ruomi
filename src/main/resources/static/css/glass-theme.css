@@ -1,0 +1,394 @@
+/* =====================================================================
+   RUOMI — Glass / Gradient theme (dark purple default, light glossy)
+   ===================================================================== */
+
+/* ---------- Dark purple (default) ---------- */
+:root,
+html[data-theme="dark"] {
+    --warm-cream: #06040f;
+    --warm-cream-2: rgba(18, 14, 36, 0.75);
+    --warm-card: rgba(22, 16, 42, 0.58);
+    --warm-ink: #EDE9FE;
+    --warm-muted: #A89BC7;
+    --warm-line: rgba(167, 139, 250, 0.2);
+    --warm-teal: #A78BFA;
+    --warm-teal-dark: #8B5CF6;
+    --warm-coral: #F472B6;
+    --warm-coral-dark: #EC4899;
+    --warm-green: #6EE7B7;
+    --warm-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    --warm-shadow-lg: 0 24px 60px rgba(76, 29, 149, 0.35);
+    --warm-radius: 16px;
+    --glass-blur: 20px;
+    --glass-bg: rgba(22, 16, 42, 0.55);
+    --glass-bg-strong: rgba(28, 20, 52, 0.72);
+    --glass-border: rgba(167, 139, 250, 0.22);
+    --glass-shine: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 48%, rgba(255,255,255,0.06) 100%);
+    --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #A855F7 45%, #EC4899 100%);
+    --accent-gradient-soft: linear-gradient(135deg, rgba(124,58,237,0.35) 0%, rgba(168,85,247,0.2) 50%, rgba(236,72,153,0.15) 100%);
+    --body-gradient:
+        radial-gradient(ellipse 100% 70% at 15% -5%, rgba(109, 40, 217, 0.45) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 50% at 95% 5%, rgba(236, 72, 153, 0.18) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 100%, rgba(79, 70, 229, 0.25) 0%, transparent 55%),
+        linear-gradient(165deg, #04030a 0%, #0a0718 35%, #0f0a22 70%, #080612 100%);
+    color-scheme: dark;
+}
+
+/* ---------- Light glossy ---------- */
+html[data-theme="light"] {
+    --warm-cream: #EDE8F7;
+    --warm-cream-2: rgba(255, 255, 255, 0.65);
+    --warm-card: rgba(255, 255, 255, 0.62);
+    --warm-ink: #1E1035;
+    --warm-muted: #6B5B80;
+    --warm-line: rgba(124, 58, 237, 0.15);
+    --warm-teal: #7C3AED;
+    --warm-teal-dark: #6D28D9;
+    --warm-coral: #EF6A52;
+    --warm-coral-dark: #E0573F;
+    --warm-green: #2E9E6B;
+    --warm-shadow: 0 8px 28px rgba(76, 29, 149, 0.1);
+    --warm-shadow-lg: 0 20px 50px rgba(76, 29, 149, 0.14);
+    --glass-bg: rgba(255, 255, 255, 0.58);
+    --glass-bg-strong: rgba(255, 255, 255, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.85);
+    --glass-shine: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.45) 45%, rgba(237,232,247,0.3) 100%);
+    --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #EC4899 100%);
+    --accent-gradient-soft: linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(168,85,247,0.08) 50%, rgba(236,72,153,0.06) 100%);
+    --body-gradient:
+        radial-gradient(ellipse 90% 60% at 10% 0%, rgba(167, 139, 250, 0.35) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 90% 10%, rgba(244, 114, 182, 0.15) 0%, transparent 50%),
+        linear-gradient(180deg, #FAF7FF 0%, #F3EDFF 45%, #EAE2FF 100%);
+    color-scheme: light;
+}
+
+html[data-theme="light"] body {
+    background-color: var(--warm-cream) !important;
+}
+
+body {
+    background: var(--body-gradient) !important;
+    background-attachment: fixed !important;
+    color: var(--warm-ink);
+    min-height: 100vh;
+}
+
+/* ---------- Glass utility ---------- */
+.glass-panel,
+.ad-card,
+.feature-card-warm,
+.stat-card-warm,
+.cat-tile,
+.border-live-card,
+.border-chart-card,
+.border-lane-filter,
+.ad-detail-card,
+.ad-seller-card,
+.border-telegram-banner,
+.border-page-hero,
+.telegram-phone-card,
+.border-telegram-mockup,
+.ruomi-telegram-section .border-live-card,
+.hero-search,
+.ruomi-navbar .navbar-collapse,
+.ruomi-mobile-bottom {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--warm-shadow);
+}
+
+.ad-card::before,
+.feature-card-warm::before,
+.border-live-card::before,
+.ad-detail-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--glass-shine);
+    pointer-events: none;
+    opacity: 0.55;
+    z-index: 0;
+}
+
+.ad-card, .feature-card-warm, .border-live-card, .ad-detail-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.ad-card > *, .feature-card-warm > *, .border-live-card > *, .ad-detail-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---------- Navbar ---------- */
+nav.navbar.ruomi-navbar {
+    background: var(--glass-bg-strong) !important;
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: 1px solid var(--glass-border) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+.brand-pill {
+    background: var(--accent-gradient) !important;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+}
+
+.btn-coral {
+    background: linear-gradient(135deg, #F472B6 0%, #EF6A52 55%, #EC4899 100%) !important;
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+}
+
+.btn-teal {
+    background: var(--accent-gradient) !important;
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+}
+
+.btn-outline-teal {
+    border-color: var(--warm-teal) !important;
+    color: var(--warm-teal) !important;
+}
+
+.btn-outline-teal:hover {
+    background: var(--accent-gradient) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+}
+
+.ruomi-navbar .city-pill,
+.ruomi-navbar .search-pill,
+.ruomi-navbar .btn-categories {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+}
+
+.theme-toggle {
+    background: var(--glass-bg) !important;
+    border-color: var(--glass-border) !important;
+}
+
+/* ---------- Hero ---------- */
+.ruomi-hero::before {
+    background:
+        linear-gradient(100deg, rgba(76, 29, 149, 0.88) 0%, rgba(109, 40, 217, 0.72) 42%, rgba(236, 72, 153, 0.25) 70%, rgba(6, 4, 15, 0.15) 100%),
+        var(--hero-img, none) !important;
+    background-size: cover !important;
+    background-position: center !important;
+}
+
+html[data-theme="light"] .ruomi-hero::before {
+    background:
+        linear-gradient(100deg, rgba(124, 58, 237, 0.75) 0%, rgba(168, 85, 247, 0.55) 45%, rgba(244, 114, 182, 0.2) 100%),
+        var(--hero-img, none) !important;
+    background-size: cover !important;
+}
+
+html[data-theme="light"] .hero-search {
+    background: var(--glass-bg-strong) !important;
+}
+
+/* ---------- Border lane pills ---------- */
+.border-lane-filter-btns {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+button.border-lane-btn.active {
+    background: var(--accent-gradient) !important;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45) !important;
+}
+
+/* ---------- Footer & visit stats ---------- */
+.ruomi-visit-stats {
+    margin-top: 2rem;
+    padding: 0 0 0.5rem;
+}
+
+.ruomi-visit-stats-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem 1.25rem;
+    padding: 0.65rem 1.15rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    box-shadow: var(--warm-shadow);
+    font-size: 0.78rem;
+    color: var(--warm-muted);
+}
+
+.ruomi-visit-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ruomi-visit-stat i {
+    color: var(--warm-teal);
+    font-size: 0.85rem;
+}
+
+.ruomi-visit-stat-value {
+    font-weight: 800;
+    color: var(--warm-ink);
+    font-size: 0.9rem;
+}
+
+.ruomi-visit-stat-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--warm-line);
+}
+
+.ruomi-site-footer {
+    background: transparent;
+    color: var(--warm-ink);
+    margin-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.ruomi-site-footer .ruomi-visit-stats {
+    margin-top: 0;
+    padding-bottom: 1rem;
+}
+
+.ruomi-footer-brand {
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.ruomi-footer-text { color: var(--warm-muted); font-size: 0.9rem; }
+
+.ruomi-footer-heading {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--warm-muted);
+    margin-bottom: 0.75rem;
+}
+
+.ruomi-footer-links a {
+    color: var(--warm-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    display: block;
+    padding: 0.15rem 0;
+}
+
+.ruomi-footer-links a:hover { color: var(--warm-teal); }
+
+.ruomi-footer-bottom {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--warm-line);
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--warm-muted);
+}
+
+footer.bg-dark,
+footer:not(.ruomi-site-footer) {
+    background: transparent !important;
+}
+
+footer.bg-dark .text-muted,
+footer.bg-dark p,
+footer.bg-dark h5,
+footer.bg-dark h6 {
+    color: var(--warm-muted) !important;
+}
+
+footer.bg-dark a.text-muted { color: var(--warm-muted) !important; }
+footer.bg-dark a.text-muted:hover { color: var(--warm-teal) !important; }
+
+/* ---------- Mobile bottom nav ---------- */
+.ruomi-mobile-bottom {
+    background: var(--glass-bg-strong) !important;
+    backdrop-filter: blur(22px) saturate(180%) !important;
+    border-top: 1px solid var(--glass-border) !important;
+}
+
+.ruomi-mobile-bottom-fab span {
+    background: var(--accent-gradient) !important;
+    box-shadow: 0 8px 22px rgba(124, 58, 237, 0.5) !important;
+}
+
+.ruomi-mobile-bottom-item.active {
+    color: var(--warm-teal);
+    background: rgba(167, 139, 250, 0.12);
+}
+
+/* ---------- Price & badges ---------- */
+.price-chip {
+    background: var(--accent-gradient) !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+}
+
+.ad-detail-price {
+    background: var(--accent-gradient) !important;
+}
+
+.ad-detail-badge.category {
+    background: rgba(167, 139, 250, 0.15) !important;
+    border-color: rgba(167, 139, 250, 0.3) !important;
+    color: var(--warm-teal) !important;
+}
+
+/* ---------- Page header ---------- */
+.ruomi-page-header {
+    background: var(--accent-gradient) !important;
+    box-shadow: 0 8px 28px rgba(124, 58, 237, 0.35);
+}
+
+/* ---------- Light theme navbar toggler ---------- */
+html[data-theme="light"] .ruomi-navbar .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%231E1035' stroke-width='2.2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+html[data-theme="dark"] .ruomi-navbar .navbar-toggler-icon,
+:root .ruomi-navbar .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23EDE9FE' stroke-width='2.2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* ---------- Forms (dark) ---------- */
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+:root .form-control,
+:root .form-select {
+    background: var(--glass-bg) !important;
+    border-color: var(--glass-border) !important;
+    color: var(--warm-ink) !important;
+}
+
+html[data-theme="light"] .form-control,
+html[data-theme="light"] .form-select {
+    background: var(--glass-bg-strong) !important;
+}
+
+/* ---------- Old footer gradient override ---------- */
+footer {
+    background: linear-gradient(180deg, transparent 0%, rgba(76, 29, 149, 0.08) 100%) !important;
+}
+
+html[data-theme="light"] footer {
+    background: linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.06) 100%) !important;
+}
+
+@media (max-width: 575.98px) {
+    .ruomi-visit-stats-inner {
+        border-radius: 16px;
+        font-size: 0.72rem;
+    }
+    .ruomi-visit-stat-value { font-size: 0.82rem; }
+}

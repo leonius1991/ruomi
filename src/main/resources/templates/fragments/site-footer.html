@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Visit statistics strip (all pages with navbar) -->
+    <div th:fragment="visit-stats" class="ruomi-visit-stats" th:if="${visitStats != null}">
+        <div class="container">
+            <div class="ruomi-visit-stats-inner">
+                <span class="ruomi-visit-stat">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="ruomi-visit-stat-value" th:text="${#numbers.formatInteger(visitStats.totalVisits, 0, 'WHITESPACE')}">0</span>
+                    <span class="ruomi-visit-stat-label">всего визитов</span>
+                </span>
+                <span class="ruomi-visit-stat-divider"></span>
+                <span class="ruomi-visit-stat">
+                    <i class="fas fa-calendar-day"></i>
+                    <span class="ruomi-visit-stat-value" th:text="${#numbers.formatInteger(visitStats.todayVisits, 0, 'WHITESPACE')}">0</span>
+                    <span class="ruomi-visit-stat-label">сегодня</span>
+                </span>
+                <span class="ruomi-visit-stat-divider d-none d-sm-inline"></span>
+                <span class="ruomi-visit-stat d-none d-sm-inline-flex">
+                    <i class="fas fa-heart"></i>
+                    <span class="ruomi-visit-stat-label">ruomi.fi — для русскоязычных в Финляндии</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full site footer -->
+    <footer th:fragment="site-footer" class="ruomi-site-footer">
+        <div th:replace="~{fragments/site-footer :: visit-stats}"></div>
+        <div class="container py-4">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5 class="ruomi-footer-brand"><i class="fas fa-bullhorn me-2"></i>ruomi.fi</h5>
+                    <p class="ruomi-footer-text">Современная доска объявлений для русскоязычного сообщества в Финляндии.</p>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="ruomi-footer-heading">Категории</h6>
+                    <ul class="list-unstyled ruomi-footer-links">
+                        <li><a href="/advertisements?category=REAL_ESTATE">Недвижимость</a></li>
+                        <li><a href="/advertisements?category=VEHICLES">Транспорт</a></li>
+                        <li><a href="/advertisements?category=ELECTRONICS">Электроника</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="ruomi-footer-heading">Информация</h6>
+                    <ul class="list-unstyled ruomi-footer-links">
+                        <li><a href="/about">О нас</a></li>
+                        <li><a href="/contact">Контакты</a></li>
+                        <li><a href="/border-queues">Очередь на границе</a></li>
+                        <li><a href="/help">Помощь</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="ruomi-footer-bottom">
+                <span>&copy; 2024–2026 ruomi.fi</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

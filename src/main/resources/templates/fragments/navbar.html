@@ -4,7 +4,7 @@
     <!-- Navigation + mobile bottom bar -->
     <th:block th:fragment="nav">
     <nav class="navbar navbar-expand-lg ruomi-navbar sticky-top">
-        <script>(function(){try{if(localStorage.getItem('ruomi-theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
+        <script>(function(){try{var t=localStorage.getItem('ruomi-theme');if(t==='light'){document.documentElement.setAttribute('data-theme','light');}else{document.documentElement.setAttribute('data-theme','dark');if(!t)localStorage.setItem('ruomi-theme','dark');}}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
         <div class="container">
             <a class="navbar-brand brand-pill" href="/">
                 <span>Ruomi</span><i class="fas fa-heart heart"></i>
@@ -71,8 +71,8 @@
                 <i class="fas fa-plus me-1"></i>Подать объявление
             </a>
 
-            <button class="theme-toggle me-2" type="button" id="themeToggle" aria-label="Переключить тему" title="Тёмная / светлая тема">
-                <i class="fas fa-moon"></i>
+            <button class="theme-toggle me-2" type="button" id="themeToggle" aria-label="Переключить тему" title="Светлая / тёмная тема">
+                <i class="fas fa-sun"></i>
             </button>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -190,18 +190,18 @@
         <script>
             (function () {
                 function syncThemeIcon() {
-                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
                     var icon = document.querySelector('#themeToggle i');
-                    if (icon) { icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon'; }
+                    if (icon) { icon.className = isLight ? 'fas fa-moon' : 'fas fa-sun'; }
                 }
                 function toggleTheme() {
-                    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                    if (isDark) {
-                        document.documentElement.removeAttribute('data-theme');
-                        try { localStorage.setItem('ruomi-theme', 'light'); } catch (e) {}
-                    } else {
+                    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                    if (isLight) {
                         document.documentElement.setAttribute('data-theme', 'dark');
                         try { localStorage.setItem('ruomi-theme', 'dark'); } catch (e) {}
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light');
+                        try { localStorage.setItem('ruomi-theme', 'light'); } catch (e) {}
                     }
                     syncThemeIcon();
                 }

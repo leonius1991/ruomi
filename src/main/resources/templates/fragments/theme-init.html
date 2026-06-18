@@ -1,3 +1,15 @@
 <script th:fragment="head-init">
-(function(){try{if(localStorage.getItem('ruomi-theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();
+(function(){
+  try {
+    var t = localStorage.getItem('ruomi-theme');
+    if (t === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      if (!t) localStorage.setItem('ruomi-theme', 'dark');
+    }
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
 </script>
