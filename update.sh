@@ -93,7 +93,7 @@ if ! command -v unzip >/dev/null 2>&1; then
     error "Установите unzip: apt install unzip"
 fi
 
-if ! systemctl list-unit-files 2>/dev/null | grep -q "${APP_NAME}.service"; then
+if ! systemctl status "${APP_NAME}" >/dev/null 2>&1 && ! systemctl list-unit-files 2>/dev/null | grep -q "${APP_NAME}.service"; then
     error "Systemd сервис ${APP_NAME}.service не найден"
 fi
 
