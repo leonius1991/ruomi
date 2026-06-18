@@ -1397,14 +1397,17 @@ html[data-theme="dark"] .telegram-actions span {
     color: var(--warm-teal);
 }
 html[data-theme="dark"] .border-lane-btn {
+    background: transparent;
+    border: none;
+    color: var(--warm-muted);
+}
+html[data-theme="dark"] .border-lane-filter-btns {
     background: var(--warm-cream-2);
     border-color: var(--warm-line);
-    color: var(--warm-ink);
 }
-html[data-theme="dark"] .border-lane-btn.active {
-    background: var(--warm-teal);
-    border-color: var(--warm-teal);
-    color: #fff;
+html[data-theme="dark"] button.border-lane-btn.active {
+    background: var(--warm-teal) !important;
+    color: #fff !important;
 }
 html[data-theme="dark"] .search-pill {
     background: var(--warm-card);
@@ -1598,45 +1601,62 @@ html[data-theme="dark"] .ruomi-navbar .nav-link:hover { color: var(--warm-teal);
 
 .border-lane-filter {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
     background: var(--warm-card);
     border: 1px solid var(--warm-line);
-    border-radius: var(--warm-radius);
-    padding: 0.85rem 1.15rem;
+    border-radius: calc(var(--warm-radius) + 4px);
+    padding: 0.9rem 1rem;
     box-shadow: var(--warm-shadow);
 }
 .border-lane-filter-label {
-    font-weight: 600;
-    color: var(--warm-muted);
-    font-size: 0.92rem;
-    white-space: nowrap;
+    font-weight: 700;
+    color: var(--warm-ink);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 .border-lane-filter-btns {
-    display: flex;
+    display: inline-flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
-}
-.border-lane-btn {
+    gap: 0.35rem;
+    padding: 0.35rem;
+    background: var(--warm-cream-2);
     border: 1px solid var(--warm-line);
-    background: var(--warm-bg);
-    color: var(--warm-ink);
     border-radius: 999px;
-    padding: 0.35rem 0.95rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
+    width: fit-content;
+    max-width: 100%;
 }
-.border-lane-btn:hover {
-    border-color: var(--warm-teal);
+button.border-lane-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none !important;
+    outline: none;
+    background: transparent;
+    color: var(--warm-muted);
+    border-radius: 999px !important;
+    padding: 0.48rem 1.05rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    min-width: 2.75rem;
+    line-height: 1.2;
+    font-family: inherit;
+}
+button.border-lane-btn:hover:not(.active) {
+    background: rgba(14, 124, 102, 0.1);
     color: var(--warm-teal);
 }
-.border-lane-btn.active {
-    background: var(--warm-teal);
-    border-color: var(--warm-teal);
-    color: #fff;
+button.border-lane-btn.active {
+    background: var(--warm-teal) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(14, 124, 102, 0.38);
+    transform: translateY(-1px);
+}
+button.border-lane-btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(14, 124, 102, 0.25);
 }
 
 .border-telegram-banner {
@@ -1956,4 +1976,214 @@ html[data-theme="dark"] .ad-detail-subscribe {
 @media (max-width: 991px) {
     .ad-seller-card { position: static; margin-top: 0.5rem; }
     .ad-detail-body { padding: 1.1rem; }
+}
+
+/* =====================================================================
+   RUOMI — Мобильная версия (все публичные страницы)
+   ===================================================================== */
+@media (max-width: 991.98px) {
+    body.ruomi-has-mobile-nav {
+        padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .container {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+
+    /* Нижняя навигация */
+    .ruomi-mobile-bottom {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1040;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        gap: 0.15rem;
+        padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px));
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: saturate(180%) blur(12px);
+        border-top: 1px solid var(--warm-line);
+        box-shadow: 0 -4px 20px rgba(31, 61, 53, 0.08);
+    }
+    .ruomi-mobile-bottom-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.15rem;
+        padding: 0.35rem 0.25rem;
+        text-decoration: none;
+        color: var(--warm-muted);
+        font-size: 0.62rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: color 0.15s ease, background 0.15s ease;
+        min-width: 0;
+    }
+    .ruomi-mobile-bottom-item i {
+        font-size: 1.05rem;
+        line-height: 1;
+    }
+    .ruomi-mobile-bottom-item.active {
+        color: var(--warm-teal);
+        background: rgba(14, 124, 102, 0.08);
+    }
+    .ruomi-mobile-bottom-fab {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        margin: 0 0.15rem;
+        transform: translateY(-10px);
+    }
+    .ruomi-mobile-bottom-fab span {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--warm-coral);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        box-shadow: 0 6px 18px rgba(239, 106, 82, 0.45);
+    }
+
+    /* Навбар — мобильное меню */
+    .ruomi-navbar .navbar-collapse {
+        background: var(--warm-card);
+        border: 1px solid var(--warm-line);
+        border-radius: var(--warm-radius);
+        padding: 0.65rem 0.85rem;
+        margin-top: 0.5rem;
+        box-shadow: var(--warm-shadow);
+    }
+    .ruomi-navbar .navbar-nav .nav-link {
+        padding: 0.55rem 0.5rem !important;
+        border-radius: 10px;
+    }
+    .ruomi-navbar .navbar-nav .nav-link:active {
+        background: var(--warm-cream-2);
+    }
+
+    /* Hero и секции */
+    .ruomi-hero h1 { font-size: 1.55rem !important; }
+    .ruomi-hero .hero-sub { font-size: 0.9rem; }
+    .hero-search {
+        flex-direction: column;
+        align-items: stretch;
+        border-radius: 16px !important;
+        padding: 0.65rem !important;
+        gap: 0.45rem !important;
+    }
+    .hero-search .divider { display: none !important; }
+    .hero-search .form-select,
+    .hero-search .btn-coral { width: 100%; max-width: 100% !important; }
+    .ruomi-section-title { font-size: 1.25rem; }
+    .features-grid { grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+    .feature-card-warm { padding: 1rem; }
+    .stats-grid { grid-template-columns: 1fr; }
+
+    /* Заголовки страниц */
+    .ruomi-page-header {
+        padding: 1.1rem 0 !important;
+        border-radius: 0 0 16px 16px;
+        margin-bottom: 0.75rem;
+    }
+    .ruomi-page-header h1 {
+        font-size: 1.25rem !important;
+        font-weight: 800;
+    }
+
+    /* Фильтры объявлений */
+    .ruomi-filters-section .row > [class*="col-"] {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Карточки объявлений — адаптивная сетка */
+    .ruomi-ad-grid > [class*="col-"] { display: flex; }
+    .ruomi-ad-grid .ad-card { width: 100%; }
+
+    /* Граница */
+    .border-telegram-banner { padding: 1.15rem !important; }
+    .border-telegram-title { font-size: 1.2rem !important; }
+    .border-page-hero { padding: 1.15rem; }
+    .border-live-count { font-size: 2rem; }
+    .border-lane-filter-btns {
+        width: 100%;
+        justify-content: center;
+        border-radius: 18px;
+    }
+    button.border-lane-btn {
+        flex: 1 1 auto;
+        min-width: calc(33% - 0.35rem);
+        text-align: center;
+        padding: 0.5rem 0.5rem;
+    }
+    button.border-lane-btn[data-lane="ALL"] {
+        min-width: calc(50% - 0.35rem);
+    }
+    .border-chart-card { padding: 1rem; overflow-x: auto; }
+
+    /* Деталь объявления */
+    .ad-detail-top { flex-direction: column; }
+    .ad-detail-price-wrap { text-align: left; width: 100%; }
+    .ad-detail-gallery-main { max-height: 260px; aspect-ratio: 4 / 3; }
+    .ad-detail-actions { flex-direction: column; }
+    .ad-detail-actions .btn-coral,
+    .ad-detail-actions .btn-fav { width: 100%; text-align: center; }
+
+    /* Профиль — сайдбар сверху */
+    .ruomi-profile-sidebar { margin-bottom: 1rem; }
+
+    /* Таблицы — горизонтальный скролл */
+    .table-responsive { -webkit-overflow-scrolling: touch; }
+
+    /* Footer */
+    footer { padding: 2rem 0 !important; }
+    footer .row > [class*="col-"] { margin-bottom: 1.25rem; }
+
+    /* Telegram баннер на главной */
+    .border-telegram-banner .border-live-card { width: 100% !important; margin-top: 0.5rem; }
+}
+
+@media (max-width: 575.98px) {
+    .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 0.55rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .ruomi-navbar .brand-pill { font-size: 0.88rem; padding: 0.24rem 0.62rem; }
+    .ruomi-mobile-bottom-item span { font-size: 0.58rem; }
+    button.border-lane-btn {
+        min-width: calc(50% - 0.35rem);
+        font-size: 0.8125rem;
+    }
+    .ruomi-ad-grid > .col-sm-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+html[data-theme="dark"] .ruomi-mobile-bottom {
+    background: rgba(15, 26, 23, 0.96);
+    border-top-color: var(--warm-line);
+}
+html[data-theme="dark"] .ruomi-mobile-bottom-item.active {
+    background: rgba(47, 178, 149, 0.12);
+    color: var(--warm-teal);
+}
+
+/* Заголовок страницы (список объявлений и др.) */
+.ruomi-page-header {
+    background: linear-gradient(110deg, var(--warm-teal) 0%, var(--warm-green) 100%);
+    color: #fff;
+}
+.ruomi-page-header h1,
+.ruomi-page-header p { color: #fff; }
+.ruomi-filters-section {
+    background: var(--warm-cream-2);
+    border-bottom: 1px solid var(--warm-line);
 }

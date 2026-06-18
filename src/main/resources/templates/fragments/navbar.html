@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <body>
-    <!-- Navigation Fragment -->
-    <nav th:fragment="nav" class="navbar navbar-expand-lg ruomi-navbar sticky-top">
+    <!-- Navigation + mobile bottom bar -->
+    <th:block th:fragment="nav">
+    <nav class="navbar navbar-expand-lg ruomi-navbar sticky-top">
         <script>(function(){try{if(localStorage.getItem('ruomi-theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();</script>
         <div class="container">
             <a class="navbar-brand brand-pill" href="/">
@@ -80,13 +81,25 @@
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <!-- Mobile search -->
-                <form class="search-pill d-flex d-md-none my-3" action="/advertisements" method="get">
+                <form class="search-pill d-flex d-md-none my-2 w-100" action="/advertisements" method="get">
                     <input class="form-control" type="search" name="search" placeholder="Что вы ищете?" aria-label="Search">
                     <button class="btn" type="submit"><i class="fas fa-search"></i></button>
                 </form>
                 <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link" href="/"><i class="fas fa-home me-2"></i>Главная</a>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/advertisements">Все объявления</a>
+                        <a class="nav-link" href="/advertisements"><i class="fas fa-list d-lg-none me-2"></i>Все объявления</a>
+                    </li>
+                    <li class="nav-item d-lg-none">
+                        <a class="nav-link" href="/border-queues"><i class="fas fa-road me-2"></i>Очередь на границе</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/favorites"><i class="fas fa-heart d-lg-none me-2"></i>Избранное</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" href="/messages"><i class="fas fa-envelope d-lg-none me-2"></i>Сообщения</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/about">О нас</a>
@@ -95,8 +108,8 @@
                         <a class="nav-link" href="/contact">Контакты</a>
                     </li>
                     <li class="nav-item d-md-none">
-                        <a class="nav-link" href="/create-advertisement" sec:authorize="isAuthenticated()">Подать объявление</a>
-                        <a class="nav-link" href="/register" sec:authorize="isAnonymous()">Подать объявление</a>
+                        <a class="nav-link" href="/create-advertisement" sec:authorize="isAuthenticated()"><i class="fas fa-plus me-2"></i>Подать объявление</a>
+                        <a class="nav-link" href="/register" sec:authorize="isAnonymous()"><i class="fas fa-plus me-2"></i>Подать объявление</a>
                     </li>
                 </ul>
                 
@@ -272,5 +285,43 @@
         });
         </script>
     </nav>
+
+    <!-- Mobile bottom navigation -->
+    <nav class="ruomi-mobile-bottom d-lg-none" aria-label="Мобильная навигация">
+        <a href="/" class="ruomi-mobile-bottom-item" data-path="/">
+            <i class="fas fa-home"></i><span>Главная</span>
+        </a>
+        <a href="/advertisements" class="ruomi-mobile-bottom-item" data-path="/advertisements">
+            <i class="fas fa-th-large"></i><span>Объявления</span>
+        </a>
+        <a href="/create-advertisement" class="ruomi-mobile-bottom-fab" sec:authorize="isAuthenticated()" title="Подать объявление">
+            <span><i class="fas fa-plus"></i></span>
+        </a>
+        <a href="/register" class="ruomi-mobile-bottom-fab" sec:authorize="isAnonymous()" title="Подать объявление">
+            <span><i class="fas fa-plus"></i></span>
+        </a>
+        <a href="/border-queues" class="ruomi-mobile-bottom-item" data-path="/border-queues">
+            <i class="fas fa-road"></i><span>Граница</span>
+        </a>
+        <a href="/profile" class="ruomi-mobile-bottom-item" sec:authorize="isAuthenticated()" data-path="/profile">
+            <i class="fas fa-user"></i><span>Профиль</span>
+        </a>
+        <a href="/login" class="ruomi-mobile-bottom-item" sec:authorize="isAnonymous()" data-path="/login">
+            <i class="fas fa-sign-in-alt"></i><span>Войти</span>
+        </a>
+    </nav>
+    <script>
+    (function () {
+        document.body.classList.add('ruomi-has-mobile-nav');
+        var path = window.location.pathname;
+        document.querySelectorAll('.ruomi-mobile-bottom-item[data-path]').forEach(function (el) {
+            var p = el.getAttribute('data-path');
+            if (p === path || (p !== '/' && path.startsWith(p))) {
+                el.classList.add('active');
+            }
+        });
+    })();
+    </script>
+    </th:block>
 </body>
 </html>

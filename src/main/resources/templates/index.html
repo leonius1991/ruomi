@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <script th:replace="~{fragments/theme-init :: head-init}"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <th:block th:replace="~{fragments/head-common :: viewport}"></th:block>
     <title th:text="${pageTitle}">ruomi.fi - Доска объявлений для русскоязычного населения в Финляндии</title>
     <meta name="description" th:attr="content=${metaDescription}" content="ruomi.fi — современная доска объявлений для русскоязычных жителей Финляндии.">
     <meta name="keywords" th:attr="content=${metaKeywords}" content="ruomi, объявления, финляндия, русскоязычные">

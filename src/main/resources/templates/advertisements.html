@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <th:block th:replace="~{fragments/head-common :: viewport}"></th:block>
     <title th:text="${pageTitle}">ruomi.fi - Все объявления</title>
     <meta name="description" th:attr="content=${metaDescription}" content="Просмотр всех объявлений на ruomi.fi">
     <meta name="keywords" th:attr="content=${metaKeywords}" content="объявления, vfinke">
@@ -27,7 +26,7 @@
     <div th:replace="~{fragments/banners :: top-banners}"></div>
     
     <!-- Page Header -->
-    <section class="bg-primary text-white py-4">
+    <section class="ruomi-page-header py-4">
         <div class="container">
             <h1 class="mb-0">
                 <i class="fas fa-list me-2"></i>
@@ -35,14 +34,14 @@
                 <span th:if="${category == null && search != null}" th:text="${'Результаты поиска: ' + search}">Поиск</span>
                 <span th:if="${category == null && search == null}">Все объявления</span>
             </h1>
-            <p class="mb-0 mt-2" th:if="${totalElements != null}">
-                Найдено объявлений: <strong th:text="${totalElements}">0</strong>
+            <p class="mb-0 mt-2 opacity-75" th:if="${totalElements != null}">
+                Найдено: <strong th:text="${totalElements}">0</strong>
             </p>
         </div>
     </section>
 
     <!-- Filters Section -->
-    <section class="bg-light py-3 border-bottom">
+    <section class="ruomi-filters-section py-3">
         <div class="container">
             <form method="get" action="/advertisements" class="row g-3">
                 <div class="col-md-3">
@@ -82,8 +81,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-9">
-                    <div th:if="${advertisements != null && !advertisements.empty}" class="row g-3">
-                        <div class="col-lg-4 col-md-6 col-6 mb-1" th:each="ad : ${advertisements.content}">
+                    <div th:if="${advertisements != null && !advertisements.empty}" class="row g-3 ruomi-ad-grid">
+                        <div class="col-lg-4 col-md-6 col-12 col-sm-6 mb-1" th:each="ad : ${advertisements.content}">
                             <div class="ad-card" th:style="${ad.isPremium} ? 'border-color:#F2C14E;' : (${ad.isUrgent} ? 'border-color:#E0573F;' : '')">
                                 <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-media d-block">
                                     <img th:if="${ad.images != null and !#lists.isEmpty(ad.images)}"
