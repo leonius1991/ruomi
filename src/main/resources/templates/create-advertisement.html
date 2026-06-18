@@ -61,15 +61,24 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Категория <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="categorySelect" th:field="*{category}" required>
+                                    <select class="form-select" id="categorySelect" name="category" required>
                                         <option value="">Выберите категорию</option>
                                         <option th:each="cat : ${categories}" 
-                                                th:value="${cat.name()}" 
-                                                th:text="${cat.getDisplayName()}">
+                                                th:value="${cat.name}" 
+                                                th:text="${cat.displayName}">
                                         </option>
                                     </select>
                                 </div>
                                 
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Подкатегория</label>
+                                    <select class="form-select" id="subcategorySelect" name="subcategoryId">
+                                        <option value="">Выберите подкатегорию (необязательно)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Тип объявления</label>
                                     <select class="form-select" id="advertisementType" name="type" th:field="*{type}">
@@ -84,17 +93,28 @@
                                     <input type="number" step="0.01" class="form-control" th:field="*{price}" min="0">
                                 </div>
                                 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-3" style="position: relative;">
                                     <label class="form-label">Город</label>
-                                    <div class="autocomplete">
-                                        <input type="text" id="cityInput" class="form-control" th:field="*{city}" placeholder="Начните вводить название города...">
-                                    </div>
+                                    <input type="text" id="cityInput" class="form-control" th:field="*{city}" 
+                                           placeholder="Начните вводить название города..." autocomplete="off">
                                 </div>
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label">Адрес/Местоположение</label>
                                 <input type="text" class="form-control" th:field="*{location}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="showPhone" name="showPhone" th:field="*{showPhone}">
+                                    <label class="form-check-label" for="showPhone">
+                                        <i class="fas fa-phone me-2"></i>Показывать мой телефон в объявлении
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Телефон будет виден только зарегистрированным пользователям
+                                    </small>
+                                </div>
                             </div>
                             
                             <div class="mb-3">
@@ -152,11 +172,75 @@
     <script th:src="@{/js/cities-autocomplete.js}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            initCityAutocomplete('cityInput');
+            // Инициализация автокомплита городов
+            if (typeof initCityAutocomplete === 'function') {
+                initCityAutocomplete('cityInput');
+            }
             
-            // Dynamic type selection based on category
+            // Dynamic subcategory and type selection based on category
             const categorySelect = document.getElementById('categorySelect');
+            const subcategorySelect = document.getElementById('subcategorySelect');
             const typeSelect = document.getElementById('advertisementType');
+            
+            if (categorySelect) {
+                categorySelect.addEventListener('change', async function() {
+                    const categoryName = this.value;
+                    
+                    // Очищаем подкатегории и типы
+                    if (subcategorySelect) {
+                        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию (необязательно)</option>';
+                    }
+                    if (typeSelect) {
+                        typeSelect.innerHTML = '<option value="">Выберите тип</option>';
+                    }
+                    
+                    if (!categoryName) {
+                        return;
+                    }
+                    
+                    // Загружаем категорию из БД для получения ID
+                    try {
+                        const categoriesResponse = await fetch('/api/categories');
+                        const categories = await categoriesResponse.json();
+                        const selectedCategory = categories.find(cat => cat.name === categoryName);
+                        
+                        if (selectedCategory && subcategorySelect) {
+                            // Загружаем подкатегории
+                            const subcategoriesResponse = await fetch('/admin/categories/subcategories/' + selectedCategory.id);
+                            const subcategories = await subcategoriesResponse.json();
+                            
+                            subcategories.forEach(sub => {
+                                const option = document.createElement('option');
+                                option.value = sub.id;
+                                option.textContent = sub.displayName;
+                                subcategorySelect.appendChild(option);
+                            });
+                        }
+                        
+                        if (selectedCategory && typeSelect) {
+                            // Загружаем типы для категории
+                            const typesResponse = await fetch('/admin/categories/types/' + selectedCategory.id);
+                            const types = await typesResponse.json();
+                            
+                            // Также загружаем глобальные типы
+                            const globalTypesResponse = await fetch('/admin/categories/types/global');
+                            const globalTypes = await globalTypesResponse.json();
+                            
+                            // Объединяем типы
+                            const allTypes = [...types, ...globalTypes];
+                            
+                            allTypes.forEach(type => {
+                                const option = document.createElement('option');
+                                option.value = type.name;
+                                option.textContent = type.displayName;
+                                typeSelect.appendChild(option);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error loading subcategories/types:', error);
+                    }
+                });
+            }
             
             if (categorySelect && typeSelect) {
                 function updateTypes() {

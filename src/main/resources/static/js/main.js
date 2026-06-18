@@ -185,13 +185,13 @@ document.addEventListener('DOMContentLoaded', function() {
             let url = '#';
             
             if (platform.includes('facebook')) {
-                url = 'https://facebook.com/newdoska';
+                url = 'https://facebook.com/ruomi';
             } else if (platform.includes('telegram')) {
-                url = 'https://t.me/newdoska';
+                url = 'https://t.me/ruomi_fi_bot';
             } else if (platform.includes('vk')) {
-                url = 'https://vk.com/newdoska';
+                url = 'https://vk.com/ruomi';
             } else if (platform.includes('instagram')) {
-                url = 'https://instagram.com/newdoska';
+                url = 'https://instagram.com/ruomi';
             }
             
             if (url !== '#') {

@@ -82,7 +82,7 @@ docker-compose down
 
 ## 📞 Поддержка
 
-- **Email**: support@newdoska.fi
+- **Email**: support@ruomi.fi
 - **Telegram**: @newdoska_support
 - **Issues**: GitHub Issues
 

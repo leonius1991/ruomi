@@ -39,7 +39,7 @@ This guide explains how to set up Telegram authentication and account linking fo
 ### Step 2: Configure Bot for Login Widget
 
 1. **Send `/setdomain`** to @BotFather
-2. **Enter your bot username** (e.g., `newdoska_bot`)
+2. **Enter your bot username** (e.g., `ruomi_fi_bot`)
 3. **Enter your domain** (e.g., `localhost:8080` for development)
 4. **Confirm the domain**
 
@@ -56,10 +56,10 @@ telegram.login.widget.bot.username=your_bot_username
 ```
 
 2. **Update login page** (`src/main/resources/templates/auth/login.html`):
-   - Replace `newdoska_bot` with your actual bot username in the Telegram widget script
+   - Replace `ruomi_fi_bot` with your actual bot username in the Telegram widget script
 
 3. **Update profile page** (`src/main/resources/templates/profile.html`):
-   - Replace `newdoska_bot` with your actual bot username in the Telegram widget script
+   - Replace `ruomi_fi_bot` with your actual bot username in the Telegram widget script
 
 ### Step 4: Database Setup
 

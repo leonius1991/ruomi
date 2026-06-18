@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:replace="~{fragments/admin-layout :: admin-layout('Тестирование почты - Админ-панель - ruomi.fi', ~{::content})}">
+        <th:block th:fragment="content">
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-envelope me-2"></i>Тестирование почты</h2>
+                </div>
+
+                <!-- Сообщения об успехе/ошибке -->
+                <div id="alertContainer"></div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Отправить тестовое письмо</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="testEmailForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>Email адрес получателя <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="test@example.com" required>
+                                    <small class="form-text text-muted">Введите email адрес для отправки тестового письма</small>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="templateType" class="form-label">
+                                        <i class="fas fa-file-alt me-2"></i>Шаблон письма <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="templateType" name="templateType" required>
+                                        <option value="">Выберите шаблон...</option>
+                                        <option th:each="template : ${templates}" 
+                                                th:value="${template.value}" 
+                                                th:text="${template.name}">
+                                        </option>
+                                    </select>
+                                    <small class="form-text text-muted">Выберите тип письма для тестирования</small>
+                                </div>
+                            </div>
+
+                            <!-- Описание выбранного шаблона -->
+                            <div id="templateDescription" class="alert alert-info" style="display: none;">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <span id="descriptionText"></span>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                    <i class="fas fa-redo me-2"></i>Очистить
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Отправить тестовое письмо
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Информация о шаблонах -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Доступные шаблоны</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3" th:each="template : ${templates}">
+                                <div class="card border">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-envelope-open-text me-2"></i>
+                                            <span th:text="${template.name}">Название</span>
+                                        </h6>
+                                        <p class="card-text text-muted small" th:text="${template.description}">
+                                            Описание шаблона
+                                        </p>
+                                        <small class="text-muted">
+                                            <code th:text="${template.value}">template_type</code>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Информация о настройках -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Текущие настройки почты</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            <i class="fas fa-server me-2"></i>
+                            <strong>SMTP сервер:</strong> 
+                            <span th:text="${@environment.getProperty('spring.mail.host', 'Не настроен')}">smtp.example.com</span>
+                        </p>
+                        <p class="text-muted">
+                            <i class="fas fa-port me-2"></i>
+                            <strong>Порт:</strong> 
+                            <span th:text="${@environment.getProperty('spring.mail.port', 'Не настроен')}">587</span>
+                        </p>
+                        <p class="text-muted">
+                            <i class="fas fa-user me-2"></i>
+                            <strong>Отправитель:</strong> 
+                            <span th:text="${@environment.getProperty('spring.mail.username', 'Не настроен')}">noreply@ruomi.fi</span>
+                        </p>
+                        <p class="text-muted small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Настройки можно изменить в файле <code>application.properties</code>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Получаем CSRF токен
+        const csrfToken = /*[[${_csrf.token}]]*/ '';
+        const csrfHeader = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+        /*]]>*/
+    </script>
+    <script>
+        // Показываем описание шаблона при выборе
+        document.getElementById('templateType').addEventListener('change', function() {
+            const selectedValue = this.value;
+            const descriptionDiv = document.getElementById('templateDescription');
+            const descriptionText = document.getElementById('descriptionText');
+            
+            if (selectedValue) {
+                const templates = [
+                    {value: 'verification', desc: 'Письмо с ссылкой для подтверждения email адреса после регистрации'},
+                    {value: 'welcome', desc: 'Приветственное письмо, отправляемое после успешного подтверждения аккаунта'},
+                    {value: 'password_reset', desc: 'Письмо со ссылкой для сброса пароля при запросе восстановления'},
+                    {value: 'ad_approved', desc: 'Уведомление пользователю об одобрении и публикации его объявления'},
+                    {value: 'ad_rejected', desc: 'Уведомление об отклонении объявления с указанием причины'},
+                    {value: 'telegram_password', desc: 'Письмо с временным паролем после регистрации через Telegram'},
+                    {value: 'private_message', desc: 'Уведомление о получении нового личного сообщения от другого пользователя'},
+                    {value: 'search_alert', desc: 'Уведомление администратору о популярном поисковом запросе без результатов'}
+                ];
+                
+                const selected = templates.find(t => t.value === selectedValue);
+                if (selected) {
+                    descriptionText.textContent = selected.desc;
+                    descriptionDiv.style.display = 'block';
+                } else {
+                    descriptionDiv.style.display = 'none';
+                }
+            } else {
+                descriptionDiv.style.display = 'none';
+            }
+        });
+
+        // Обработка отправки формы
+        document.getElementById('testEmailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const templateType = document.getElementById('templateType').value;
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // Блокируем кнопку
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Отправка...';
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('email', email);
+                formData.append('templateType', templateType);
+                
+                const response = await fetch('/admin/email-test/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                // Показываем результат
+                showAlert(data.success, data.success ? data.message : data.error);
+                
+                if (data.success) {
+                    // Очищаем форму
+                    document.getElementById('testEmailForm').reset();
+                    document.getElementById('templateDescription').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert(false, 'Произошла ошибка при отправке: ' + error.message);
+            } finally {
+                // Разблокируем кнопку
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }
+        });
+
+        function showAlert(success, message) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = success ? 'alert-success' : 'alert-danger';
+            const icon = success ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas ${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Автоматически скрываем через 5 секунд
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+
+        function resetForm() {
+            document.getElementById('testEmailForm').reset();
+            document.getElementById('templateDescription').style.display = 'none';
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
+

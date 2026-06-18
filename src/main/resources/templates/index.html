@@ -27,64 +27,60 @@
     <!-- Top Banners -->
     <div th:replace="~{fragments/banners :: top-banners}"></div>
     
-    <!-- Category Ribbon -->
-    <section class="category-ribbon bg-white py-2 shadow-sm" style="border-bottom: 1px solid #e9ecef;">
-        <div class="container">
-            <div class="d-flex flex-wrap justify-content-center" style="gap: 0.5rem;">
-                <div class="dropdown category-chip" th:each="menu : ${categoryMenus}">
-                    <button class="btn btn-outline-primary dropdown-toggle btn-sm text-uppercase" style="font-size: 0.85rem; font-weight: 400; min-width: 140px;"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                        <i class="fa-solid" th:classappend="${' ' + menu.icon()}"></i>
-                        <span th:text="${menu.label()}">Категория</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li>
-                            <a class="dropdown-item fw-semibold"
-                               th:href="@{/advertisements(category=${menu.categoryParam()})}">
-                                Все объявления
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li th:if="${#lists.isEmpty(menu.subcategories())}">
-                            <span class="dropdown-item text-muted">Подкатегории появятся позже</span>
-                        </li>
-                        <li th:each="sub : ${menu.subcategories()}">
-                            <a class="dropdown-item"
-                               th:href="${sub.link()}"
-                               th:text="${sub.label()}">Подкатегория</a>
-                        </li>
-                    </ul>
+    <!-- Hero Section -->
+    <section class="container">
+        <div class="ruomi-hero" style="--hero-img: url('/images/hero-helsinki.jpg');">
+            <div class="container py-5">
+                <div class="col-lg-9 col-xl-7">
+                    <h1>Покупай и продавай рядом с домом</h1>
+                    <p class="hero-sub mb-4">Доска объявлений для русскоговорящих в Финляндии</p>
+                    <form class="hero-search" action="/advertisements" method="get">
+                        <i class="fas fa-search ms-1" style="color: #6B7C75;"></i>
+                        <input class="form-control" type="search" name="search" placeholder="Найти товары, услуги, недвижимость...">
+                        <div class="divider d-none d-sm-block"></div>
+                        <select class="form-select d-none d-sm-block" name="city" style="max-width: 170px;">
+                            <option value="">Вся Финляндия</option>
+                            <option>Хельсинки</option>
+                            <option>Эспоо</option>
+                            <option>Вантаа</option>
+                            <option>Турку</option>
+                            <option>Тампере</option>
+                            <option>Оулу</option>
+                        </select>
+                        <button class="btn btn-coral px-4" type="submit">Найти</button>
+                    </form>
+                    <div class="hero-tags mt-3">
+                        <span class="me-2" style="opacity: 0.9; font-size: 0.85rem;">Например:</span>
+                        <a href="/advertisements?search=велосипед">велосипед</a>
+                        <a href="/advertisements?search=детская кроватка">детская кроватка</a>
+                        <a href="/advertisements?search=диван">диван</a>
+                        <a href="/advertisements?search=ноутбук">ноутбук</a>
+                        <a href="/advertisements?search=квартира">квартира</a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Hero Section -->
-    <section class="hero-section text-white text-center py-4">
+    <!-- Categories -->
+    <section class="py-4">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <h1 class="h2 fw-light mb-3" style="font-size: 2rem;">
-                        Добро пожаловать на ruomi.fi
-                    </h1>
-                    <p class="mb-4" style="font-size: 1rem; opacity: 0.9;">
-                        Современная доска объявлений для русскоязычного населения в Финляндии. 
-                        Размещайте объявления, находите нужные товары и услуги.
-                    </p>
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="/advertisements" class="btn btn-primary btn-lg">
-                            <i class="fas fa-search me-2"></i>Найти объявления
-                        </a>
-                        <a href="/create-advertisement" class="btn btn-outline-light btn-lg" sec:authorize="isAuthenticated()">
-                            <i class="fas fa-plus me-2"></i>Разместить объявление
-                        </a>
-                        <a href="/register" class="btn btn-outline-light btn-lg" sec:authorize="isAnonymous()">
-                            <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
-                        </a>
-                    </div>
-                </div>
+            <div class="section-head">
+                <h2 style="font-size: 1.4rem;">Популярные категории</h2>
+                <a class="link-all" href="/advertisements">Все объявления <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            <div class="cat-grid">
+                <a class="cat-tile" th:each="menu : ${categoryMenus}"
+                   th:href="@{/advertisements(category=${menu.categoryParam()})}">
+                    <img class="cat-thumb"
+                         th:src="@{'/images/categories/' + ${#strings.toLowerCase(menu.categoryParam())} + '.png'}"
+                         th:alt="${menu.label()}"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <span class="cat-thumb fa-fallback" style="display: none;">
+                        <i class="fa-solid" th:classappend="${' ' + menu.icon()}"></i>
+                    </span>
+                    <span class="cat-name" th:text="${menu.label()}">Категория</span>
+                </a>
             </div>
         </div>
     </section>
@@ -121,33 +117,31 @@
     <!-- Premium Advertisements -->
     <section class="py-4" th:if="${not #lists.isEmpty(premiumAdvertisements)}">
         <div class="container">
-                <h3 class="text-center mb-4" style="font-size: 1.5rem; font-weight: 300;">
+                <h3 class="text-center mb-4" style="font-size: 1.25rem; font-weight: 500;">
                 <i class="fas fa-star text-warning me-2"></i>
                 Премиум объявления
             </h3>
             <div class="row g-3">
-                <div class="col-lg-4 col-md-6" th:each="ad : ${premiumAdvertisements}">
-                    <div class="card h-100 shadow-sm" style="border-radius: 16px; border: 2px solid #ffc107; background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(255,193,7,0.3)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
-                        <div class="card-body" style="padding: 1.5rem;">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem; padding: 0.4rem 0.7rem;">
-                                    <i class="fas fa-star me-1"></i>Премиум
-                                </span>
-                                <small class="text-muted" style="font-size: 0.75rem;" th:text="${#temporals.format(ad.createdAt, 'dd.MM')}">01.01</small>
+                <div class="col-lg-3 col-md-4 col-6" th:each="ad : ${premiumAdvertisements}">
+                    <div class="ad-card" style="border-color: #F2C14E;">
+                        <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-media d-block">
+                            <img th:if="${ad.images != null and not #lists.isEmpty(ad.images)}"
+                                 th:src="@{/files/{fn}(fn=${ad.images[0].fileName})}" th:alt="${ad.title}">
+                            <div th:if="${ad.images == null or #lists.isEmpty(ad.images)}" class="ad-noimg">
+                                <i class="fas fa-image"></i>
                             </div>
-                            <h6 class="card-title mb-2 fw-semibold" style="font-size: 1rem; line-height: 1.4; min-height: 2.8rem;" th:text="${ad.title}">Заголовок</h6>
-                            <p class="card-text text-muted mb-3" style="font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2;" th:text="${T(fi.newdoska.doska.util.TextUtils).abbreviate(ad.description, 90)}">Описание...</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="h6 text-primary mb-0 fw-bold" style="font-size: 1.15rem;" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
-                                <span class="text-muted small" style="font-size: 0.8rem;" th:if="${ad.price == null}">Цена не указана</span>
-                                <small class="text-muted d-flex align-items-center" style="font-size: 0.75rem;">
-                                    <i class="fas fa-map-marker-alt me-1"></i>
-                                    <span th:text="${ad.city}">Хельсинки</span>
-                                </small>
+                            <span class="ad-badge position-absolute" style="top:0.55rem; left:0.55rem; background:#F2C14E; color:#1F3D35; margin:0;">
+                                <i class="fas fa-star me-1"></i>Премиум
+                            </span>
+                            <span class="price-chip" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                            <span class="price-chip" th:if="${ad.price == null}">Цена не указана</span>
+                        </a>
+                        <div class="ad-body">
+                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-title text-decoration-none" th:text="${ad.title}">Заголовок</a>
+                            <div class="ad-meta d-flex align-items-center justify-content-between">
+                                <span><i class="fas fa-map-marker-alt me-1"></i><span th:text="${ad.city}">Хельсинки</span></span>
+                                <span th:text="${#temporals.format(ad.createdAt, 'dd.MM')}">01.01</span>
                             </div>
-                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="btn btn-warning btn-sm w-100 fw-bold" style="font-size: 0.85rem; border-radius: 8px;">
-                                <i class="fas fa-arrow-right me-1"></i>Подробнее
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -158,33 +152,31 @@
     <!-- Urgent Advertisements -->
     <section class="py-4 bg-light" th:if="${not #lists.isEmpty(urgentAdvertisements)}">
         <div class="container">
-            <h3 class="text-center mb-4" style="font-size: 1.5rem; font-weight: 300;">
+            <h3 class="text-center mb-4" style="font-size: 1.25rem; font-weight: 500;">
                 <i class="fas fa-exclamation-triangle text-danger me-2"></i>
                 Срочные объявления
             </h3>
             <div class="row g-3">
-                <div class="col-lg-4 col-md-6" th:each="ad : ${urgentAdvertisements}">
-                    <div class="card h-100 shadow-sm" style="border-radius: 16px; border-left: 4px solid #dc3545; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(220,53,69,0.2)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
-                        <div class="card-body" style="padding: 1.5rem;">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <span class="badge bg-danger" style="font-size: 0.7rem; padding: 0.4rem 0.7rem;">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>Срочно
-                                </span>
-                                <small class="text-muted" style="font-size: 0.75rem;" th:text="${#temporals.format(ad.createdAt, 'dd.MM')}">01.01</small>
+                <div class="col-lg-3 col-md-4 col-6" th:each="ad : ${urgentAdvertisements}">
+                    <div class="ad-card" style="border-color: #E0573F;">
+                        <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-media d-block">
+                            <img th:if="${ad.images != null and not #lists.isEmpty(ad.images)}"
+                                 th:src="@{/files/{fn}(fn=${ad.images[0].fileName})}" th:alt="${ad.title}">
+                            <div th:if="${ad.images == null or #lists.isEmpty(ad.images)}" class="ad-noimg">
+                                <i class="fas fa-image"></i>
                             </div>
-                            <h6 class="card-title mb-2 fw-semibold" style="font-size: 1rem; line-height: 1.4; min-height: 2.8rem;" th:text="${ad.title}">Заголовок</h6>
-                            <p class="card-text text-muted mb-3" style="font-size: 0.85rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2;" th:text="${T(fi.newdoska.doska.util.TextUtils).abbreviate(ad.description, 90)}">Описание...</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="h6 text-primary mb-0 fw-bold" style="font-size: 1.15rem;" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
-                                <span class="text-muted small" style="font-size: 0.8rem;" th:if="${ad.price == null}">Цена не указана</span>
-                                <small class="text-muted d-flex align-items-center" style="font-size: 0.75rem;">
-                                    <i class="fas fa-map-marker-alt me-1"></i>
-                                    <span th:text="${ad.city}">Хельсинки</span>
-                                </small>
+                            <span class="ad-badge position-absolute" style="top:0.55rem; left:0.55rem; background:#E0573F; color:#fff; margin:0;">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Срочно
+                            </span>
+                            <span class="price-chip" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                            <span class="price-chip" th:if="${ad.price == null}">Цена не указана</span>
+                        </a>
+                        <div class="ad-body">
+                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-title text-decoration-none" th:text="${ad.title}">Заголовок</a>
+                            <div class="ad-meta d-flex align-items-center justify-content-between">
+                                <span><i class="fas fa-map-marker-alt me-1"></i><span th:text="${ad.city}">Хельсинки</span></span>
+                                <span th:text="${#temporals.format(ad.createdAt, 'dd.MM')}">01.01</span>
                             </div>
-                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="btn btn-danger btn-sm w-100" style="font-size: 0.85rem; border-radius: 8px;">
-                                <i class="fas fa-arrow-right me-1"></i>Подробнее
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -205,25 +197,24 @@
                 </a>
             </div>
             <div class="row g-3">
-                <div class="col-lg-3 col-md-6" th:each="ad : ${latestAdvertisements}">
-                    <div class="card h-100 shadow-sm" style="border-radius: 16px; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
-                        <div class="card-body" style="padding: 1.5rem;">
-                            <div class="mb-2">
-                                <span class="badge bg-light text-dark" style="font-size: 0.65rem; padding: 0.3rem 0.6rem;" th:text="${ad.category.getDisplayName()}">Категория</span>
+                <div class="col-lg-3 col-md-4 col-6" th:each="ad : ${latestAdvertisements}">
+                    <div class="ad-card">
+                        <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-media d-block">
+                            <img th:if="${ad.images != null and not #lists.isEmpty(ad.images)}"
+                                 th:src="@{/files/{fn}(fn=${ad.images[0].fileName})}" th:alt="${ad.title}">
+                            <div th:if="${ad.images == null or #lists.isEmpty(ad.images)}" class="ad-noimg">
+                                <i class="fas fa-image"></i>
                             </div>
-                            <h6 class="card-title mb-2 fw-semibold" style="font-size: 0.95rem; line-height: 1.4; min-height: 2.6rem;" th:text="${ad.title}">Заголовок</h6>
-                            <p class="card-text text-muted mb-3" style="font-size: 0.8rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2;" th:text="${T(fi.newdoska.doska.util.TextUtils).abbreviate(ad.description, 75)}">Описание...</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="text-primary fw-bold" style="font-size: 1rem;" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
-                                <span class="text-muted" style="font-size: 0.75rem;" th:if="${ad.price == null}">Цена не указана</span>
-                                <small class="text-muted d-flex align-items-center" style="font-size: 0.7rem;">
-                                    <i class="fas fa-map-marker-alt me-1"></i>
-                                    <span th:text="${ad.city}">Хельсинки</span>
-                                </small>
+                            <span class="price-chip" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                            <span class="price-chip" th:if="${ad.price == null}">Цена не указана</span>
+                        </a>
+                        <div class="ad-body">
+                            <span class="ad-badge" th:text="${ad.category.getDisplayName()}">Категория</span>
+                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-title text-decoration-none" th:text="${ad.title}">Заголовок</a>
+                            <div class="ad-meta d-flex align-items-center justify-content-between">
+                                <span><i class="fas fa-map-marker-alt me-1"></i><span th:text="${ad.city}">Хельсинки</span></span>
+                                <span th:text="${#temporals.format(ad.createdAt, 'dd.MM')}">01.01</span>
                             </div>
-                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="btn btn-outline-primary btn-sm w-100" style="font-size: 0.8rem; border-radius: 8px;">
-                                <i class="fas fa-eye me-1"></i>Смотреть
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -254,7 +245,7 @@
                             <li><i class="fas fa-arrow-right me-2"></i>Уведомления о новых объявлениях</li>
                         </ul>
                     </div>
-                    <a href="https://t.me/newdoska_bot" class="btn btn-light btn-lg" target="_blank">
+                    <a href="https://t.me/ruomi_fi_bot" class="btn btn-light btn-lg" target="_blank">
                         <i class="fab fa-telegram me-2"></i>
                         Открыть в Telegram
                     </a>
@@ -267,7 +258,7 @@
                                     <i class="fab fa-telegram fa-2x text-primary me-3"></i>
                                     <div>
                                         <h6 class="mb-0 text-uppercase">ruomi.fi Bot</h6>
-                                        <small class="text-muted">@ruomi_bot</small>
+                                        <small class="text-muted">@ruomi_fi_bot</small>
                                     </div>
                                 </div>
                                 <div class="message-preview">
@@ -296,28 +287,28 @@
                 <div class="col-lg-3 col-md-6 mb-4 text-center">
                     <div class="feature-card">
                         <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
-                        <h5>Мобильная версия</h5>
+                        <h5 style="font-size: 1rem;">Мобильная версия</h5>
                         <p class="text-muted">Удобно использовать на любых устройствах</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4 text-center">
                     <div class="feature-card">
                         <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
-                        <h5>Безопасность</h5>
+                        <h5 style="font-size: 1rem;">Безопасность</h5>
                         <p class="text-muted">Защищенные транзакции и проверенные пользователи</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4 text-center">
                     <div class="feature-card">
                         <i class="fas fa-globe fa-3x text-info mb-3"></i>
-                        <h5>Русскоязычная поддержка</h5>
+                        <h5 style="font-size: 1rem;">Русскоязычная поддержка</h5>
                         <p class="text-muted">Полная поддержка на русском языке</p>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4 text-center">
                     <div class="feature-card">
                         <i class="fas fa-rocket fa-3x text-warning mb-3"></i>
-                        <h5>Быстро и удобно</h5>
+                        <h5 style="font-size: 1rem;">Быстро и удобно</h5>
                         <p class="text-muted">Размещайте объявления за несколько минут</p>
                     </div>
                 </div>
@@ -358,6 +349,7 @@
                     <ul class="list-unstyled">
                         <li><a href="/about" class="text-muted text-decoration-none">О нас</a></li>
                         <li><a href="/contact" class="text-muted text-decoration-none">Контакты</a></li>
+                        <li><a href="/support" class="text-muted text-decoration-none">Написать в поддержку</a></li>
                         <li><a href="/help" class="text-muted text-decoration-none">Помощь</a></li>
                         <li><a href="/terms" class="text-muted text-decoration-none">Условия использования</a></li>
                     </ul>

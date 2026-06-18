@@ -20,6 +20,7 @@ import java.util.List;
 public class PrivateMessageService {
     
     private final PrivateMessageRepository messageRepository;
+    private final EmailService emailService;
     
     @Autowired(required = false)
     @org.springframework.context.annotation.Lazy
@@ -46,12 +47,19 @@ public class PrivateMessageService {
                     sender.getLastName(),
                     sender.getUsername(),
                     content.length() > 100 ? content.substring(0, 100) + "..." : content,
-                    sender.getId()
+                    saved.getId()
                 );
                 telegramBot.sendMessage(recipient.getTelegramId(), notification);
             } catch (Exception e) {
                 log.error("Failed to send Telegram notification for private message", e);
             }
+        }
+        
+        // Отправляем email уведомление
+        try {
+            emailService.sendPrivateMessageNotification(recipient, sender, content);
+        } catch (Exception e) {
+            log.error("Failed to send email notification for private message", e);
         }
         
         return saved;
@@ -111,6 +119,10 @@ public class PrivateMessageService {
         }
         
         messageRepository.save(message);
+    }
+    
+    public PrivateMessage getMessageById(Long messageId) {
+        return messageRepository.findById(messageId).orElse(null);
     }
 }
 

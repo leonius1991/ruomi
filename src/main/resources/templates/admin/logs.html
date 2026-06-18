@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:replace="~{fragments/admin-layout :: admin-layout('Логи приложения - ruomi.fi', ~{::content})}">
+        <th:block th:fragment="content">
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0"><i class="fas fa-file-alt me-2"></i>Логи приложения</h2>
+                    <div>
+                        <button type="button" class="btn btn-danger" id="restartBtn" onclick="restartApplication()">
+                            <i class="fas fa-sync-alt me-2"></i>Перезапустить приложение
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="refreshLogs()">
+                            <i class="fas fa-sync me-2"></i>Обновить
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Показываются последние <span id="linesCount" th:text="${lines}">100</span> строк логов
+                </div>
+                
+                <!-- Tabs -->
+                <ul class="nav nav-tabs mb-3" id="logTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="app-logs-tab" data-bs-toggle="tab" data-bs-target="#app-logs" type="button" role="tab">
+                            <i class="fas fa-file-alt me-2"></i>Логи приложения
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="update-logs-tab" data-bs-toggle="tab" data-bs-target="#update-logs" type="button" role="tab">
+                            <i class="fas fa-sync-alt me-2"></i>Логи обновлений
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- Tab Content -->
+                <div class="tab-content" id="logTabsContent">
+                    <!-- Application Logs -->
+                    <div class="tab-pane fade show active" id="app-logs" role="tabpanel">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="log-container" style="background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 8px; max-height: 600px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem;">
+                                    <div th:if="${logEntries != null and !logEntries.isEmpty()}">
+                                        <div th:each="log : ${logEntries}" th:text="${log}" style="margin-bottom: 0.25rem; white-space: pre-wrap;"></div>
+                                    </div>
+                                    <div th:if="${logEntries == null or logEntries.isEmpty()}" class="text-muted">
+                                        Логи не найдены или файл логов недоступен
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Update Logs -->
+                    <div class="tab-pane fade" id="update-logs" role="tabpanel">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="log-container" style="background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 8px; max-height: 600px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem;">
+                                    <div th:if="${updateLogs != null and !updateLogs.isEmpty()}">
+                                        <div th:each="log : ${updateLogs}" th:text="${log}" style="margin-bottom: 0.25rem; white-space: pre-wrap;"></div>
+                                    </div>
+                                    <div th:if="${updateLogs == null or updateLogs.isEmpty()}" class="text-muted">
+                                        Логи обновлений пусты
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const csrfToken = /*[[${_csrf.token}]]*/ '';
+        const csrfHeader = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+        /*]]>*/
+    </script>
+    <script>
+        function refreshLogs() {
+            location.reload();
+        }
+        
+        function restartApplication() {
+            if (!confirm('Вы уверены, что хотите перезапустить приложение? Это может занять несколько секунд.')) {
+                return;
+            }
+            
+            const btn = document.getElementById('restartBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Перезапуск...';
+            
+            fetch('/admin/logs/restart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    alert('❌ Ошибка: ' + (data.error || 'Не удалось перезапустить приложение'));
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Перезапустить приложение';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Ошибка при отправке запроса на перезапуск');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Перезапустить приложение';
+            });
+        }
+        
+        // Автообновление логов каждые 30 секунд
+        setInterval(function() {
+            const activeTab = document.querySelector('#logTabs .nav-link.active');
+            if (activeTab && activeTab.id === 'app-logs-tab') {
+                fetch('/admin/logs/api/latest?lines=' + document.getElementById('linesCount').textContent)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.logs && data.logs.length > 0) {
+                            const logContainer = document.querySelector('#app-logs .log-container');
+                            logContainer.innerHTML = data.logs.map(log => 
+                                '<div style="margin-bottom: 0.25rem; white-space: pre-wrap;">' + 
+                                escapeHtml(log) + '</div>'
+                            ).join('');
+                            logContainer.scrollTop = logContainer.scrollHeight;
+                        }
+                    })
+                    .catch(error => console.error('Error refreshing logs:', error));
+            }
+        }, 30000);
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

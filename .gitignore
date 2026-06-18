@@ -33,6 +33,7 @@ build/
 .vscode/
 
 ### OS ###
+nul
 .DS_Store
 .DS_Store?
 ._*

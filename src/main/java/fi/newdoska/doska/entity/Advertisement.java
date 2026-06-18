@@ -38,6 +38,10 @@ public class Advertisement {
     @Column(nullable = false)
     private Category category;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id")
+    private fi.newdoska.doska.entity.Subcategory subcategory;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AdvertisementType type = AdvertisementType.SALE;
@@ -81,6 +85,9 @@ public class Advertisement {
     
     @Column
     private Integer views = 0;
+    
+    @Column(nullable = false)
+    private Boolean showPhone = false;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

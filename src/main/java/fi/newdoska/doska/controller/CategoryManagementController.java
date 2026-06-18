@@ -29,6 +29,42 @@ public class CategoryManagementController {
         return "admin/category-management";
     }
     
+    @GetMapping("/category/{id}")
+    @ResponseBody
+    public Category getCategory(@PathVariable Long id) {
+        return categoryRepository.findById(id).orElseThrow();
+    }
+    
+    @GetMapping("/subcategories/{categoryId}")
+    @ResponseBody
+    public java.util.List<Subcategory> getSubcategories(@PathVariable Long categoryId) {
+        return subcategoryRepository.findByParentCategoryId(categoryId);
+    }
+    
+    @GetMapping("/types/{categoryId}")
+    @ResponseBody
+    public java.util.List<AdvertisementTypeEntity> getTypes(@PathVariable Long categoryId) {
+        return typeRepository.findByCategoryIdAndActiveTrueOrderBySortOrderAsc(categoryId);
+    }
+    
+    @GetMapping("/types/global")
+    @ResponseBody
+    public java.util.List<AdvertisementTypeEntity> getGlobalTypes() {
+        return typeRepository.findByCategoryIsNullAndActiveTrueOrderBySortOrderAsc();
+    }
+    
+    @GetMapping("/subcategory/{id}")
+    @ResponseBody
+    public Subcategory getSubcategory(@PathVariable Long id) {
+        return subcategoryRepository.findById(id).orElseThrow();
+    }
+    
+    @GetMapping("/type/{id}")
+    @ResponseBody
+    public AdvertisementTypeEntity getType(@PathVariable Long id) {
+        return typeRepository.findById(id).orElseThrow();
+    }
+    
     @PostMapping("/category/create")
     public String createCategory(@ModelAttribute Category category, RedirectAttributes redirectAttributes) {
         categoryRepository.save(category);
@@ -57,21 +93,44 @@ public class CategoryManagementController {
     }
     
     @PostMapping("/subcategory/create")
-    public String createSubcategory(@RequestParam Long categoryId, @ModelAttribute Subcategory subcategory, RedirectAttributes redirectAttributes) {
+    public String createSubcategory(@RequestParam Long categoryId, 
+                                   @RequestParam(required = false) Long advertisementTypeId,
+                                   @ModelAttribute Subcategory subcategory, 
+                                   RedirectAttributes redirectAttributes) {
         Category category = categoryRepository.findById(categoryId).orElseThrow();
         subcategory.setParentCategory(category);
+        
+        if (advertisementTypeId != null) {
+            AdvertisementTypeEntity type = typeRepository.findById(advertisementTypeId).orElse(null);
+            subcategory.setAdvertisementType(type);
+        } else {
+            subcategory.setAdvertisementType(null);
+        }
+        
         subcategoryRepository.save(subcategory);
         redirectAttributes.addFlashAttribute("success", "Подкатегория создана");
         return "redirect:/admin/categories";
     }
     
     @PostMapping("/subcategory/{id}/update")
-    public String updateSubcategory(@PathVariable Long id, @ModelAttribute Subcategory subcategory, RedirectAttributes redirectAttributes) {
+    public String updateSubcategory(@PathVariable Long id, 
+                                   @RequestParam(required = false) Long advertisementTypeId,
+                                   @ModelAttribute Subcategory subcategory, 
+                                   RedirectAttributes redirectAttributes) {
         Subcategory existing = subcategoryRepository.findById(id).orElseThrow();
         existing.setName(subcategory.getName());
         existing.setDisplayName(subcategory.getDisplayName());
+        existing.setIcon(subcategory.getIcon());
         existing.setSortOrder(subcategory.getSortOrder());
         existing.setActive(subcategory.getActive());
+        
+        if (advertisementTypeId != null) {
+            AdvertisementTypeEntity type = typeRepository.findById(advertisementTypeId).orElse(null);
+            existing.setAdvertisementType(type);
+        } else {
+            existing.setAdvertisementType(null);
+        }
+        
         subcategoryRepository.save(existing);
         redirectAttributes.addFlashAttribute("success", "Подкатегория обновлена");
         return "redirect:/admin/categories";

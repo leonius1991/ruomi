@@ -63,6 +63,33 @@ public class ProfileController {
         return "redirect:/profile";
     }
     
+    @PostMapping("/update")
+    public String updateProfile(@RequestParam(required = false) String firstName,
+                               @RequestParam(required = false) String lastName,
+                               @RequestParam(required = false) String phone,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            String username = getCurrentUsername();
+            User user = (User) userService.loadUserByUsername(username);
+            
+            if (firstName != null && !firstName.trim().isEmpty()) {
+                user.setFirstName(firstName.trim());
+            }
+            if (lastName != null && !lastName.trim().isEmpty()) {
+                user.setLastName(lastName.trim());
+            }
+            if (phone != null) {
+                user.setPhone(phone.trim().isEmpty() ? null : phone.trim());
+            }
+            
+            userService.saveUser(user);
+            redirectAttributes.addFlashAttribute("success", "Профиль успешно обновлен");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка при обновлении профиля: " + e.getMessage());
+        }
+        return "redirect:/profile";
+    }
+    
     private String getCurrentUsername() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {

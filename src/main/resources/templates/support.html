@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Написать в поддержку - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/theme/css}">
+</head>
+<body>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <!-- Notification Bar -->
+    <div th:replace="~{fragments/notifications :: notification-bar}"></div>
+
+    <div class="container my-5" style="max-width: 800px;">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="fas fa-headset me-2"></i>Написать в поддержку</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div id="alertContainer"></div>
+                        
+                        <form id="supportForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i>Ваш email <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       th:value="${#authentication != null and #authentication.principal != null ? #authentication.principal.email : ''}"
+                                       required>
+                                <small class="form-text text-muted">
+                                    На этот адрес мы отправим ответ на ваше обращение
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">
+                                    <i class="fas fa-tag me-2"></i>Тема <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="subject" 
+                                       name="subject" 
+                                       placeholder="Например: Проблема с регистрацией"
+                                       required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">
+                                    <i class="fas fa-comment-alt me-2"></i>Сообщение <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" 
+                                          id="message" 
+                                          name="message" 
+                                          rows="8" 
+                                          placeholder="Опишите вашу проблему или вопрос..."
+                                          required></textarea>
+                                <small class="form-text text-muted">
+                                    Максимум 2000 символов
+                                </small>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Отмена
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Отправить сообщение
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm border-0 mt-4">
+                    <div class="card-body">
+                        <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Полезная информация</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-clock me-2 text-primary"></i>
+                                <strong>Время ответа:</strong> Обычно мы отвечаем в течение 24 часов
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-envelope me-2 text-primary"></i>
+                                <strong>Email:</strong> support@ruomi.fi
+                            </li>
+                            <li class="mb-2">
+                                <i class="fab fa-telegram me-2 text-primary"></i>
+                                <strong>Telegram:</strong> @ruomi_fi_bot
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const csrfToken = /*[[${_csrf.token}]]*/ '';
+        const csrfHeader = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+        /*]]>*/
+    </script>
+    <script>
+        document.getElementById('supportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            // Валидация
+            if (message.length > 2000) {
+                showAlert(false, 'Сообщение не должно превышать 2000 символов');
+                return;
+            }
+            
+            // Блокируем кнопку
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Отправка...';
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('email', email);
+                formData.append('subject', subject);
+                formData.append('message', message);
+                
+                const response = await fetch('/support/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                showAlert(data.success, data.success ? data.message : data.error);
+                
+                if (data.success) {
+                    document.getElementById('supportForm').reset();
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert(false, 'Произошла ошибка при отправке: ' + error.message);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }
+        });
+        
+        function showAlert(success, message) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = success ? 'alert-success' : 'alert-danger';
+            const icon = success ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas ${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Автоматически скрываем через 5 секунд
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
+

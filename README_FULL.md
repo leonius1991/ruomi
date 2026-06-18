@@ -299,9 +299,9 @@ MIT License - см. файл [LICENSE](LICENSE) для подробностей.
 ## 📞 Поддержка
 
 ### Контакты
-- **Email**: info@newdoska.fi
+- **Email**: info@ruomi.fi
 - **Telegram**: @newdoska_support
-- **Веб-сайт**: https://newdoska.fi
+- **Веб-сайт**: https://ruomi.fi
 
 ### Документация
 - [Руководство пользователя](USER_GUIDE.md)

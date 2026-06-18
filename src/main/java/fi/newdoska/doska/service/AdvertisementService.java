@@ -7,6 +7,7 @@ import fi.newdoska.doska.entity.ModerationLog;
 import fi.newdoska.doska.entity.User;
 import fi.newdoska.doska.repository.AdvertisementImageRepository;
 import fi.newdoska.doska.repository.AdvertisementRepository;
+import fi.newdoska.doska.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,10 +31,14 @@ public class AdvertisementService {
     private final AdvertisementRepository advertisementRepository;
     private final AdvertisementImageRepository imageRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final ModerationLogService moderationLogService;
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
     private final CategorySubscriptionService categorySubscriptionService;
+    private final EmailService emailService;
+    private final org.springframework.context.ApplicationContext applicationContext;
+    private final fi.newdoska.doska.repository.SubcategoryRepository subcategoryRepository;
     
     public Advertisement createAdvertisement(AdvertisementDto dto, String username) {
         return createAdvertisement(dto, username, null);
@@ -46,6 +51,14 @@ public class AdvertisementService {
         advertisement.setTitle(dto.getTitle());
         advertisement.setDescription(dto.getDescription());
         advertisement.setCategory(Advertisement.Category.valueOf(dto.getCategory()));
+        
+        // Устанавливаем подкатегорию, если указана
+        if (dto.getSubcategoryId() != null) {
+            fi.newdoska.doska.entity.Subcategory subcategory = 
+                subcategoryRepository.findById(dto.getSubcategoryId()).orElse(null);
+            advertisement.setSubcategory(subcategory);
+        }
+        
         advertisement.setType(Advertisement.AdvertisementType.valueOf(dto.getType()));
         advertisement.setPrice(dto.getPrice());
         advertisement.setLocation(dto.getLocation());
@@ -53,6 +66,7 @@ public class AdvertisementService {
         advertisement.setStatus(Advertisement.Status.PENDING);
         advertisement.setPremium(dto.isPremium());
         advertisement.setUrgent(dto.isUrgent());
+        advertisement.setShowPhone(dto.getShowPhone() != null ? dto.getShowPhone() : false);
         advertisement.setUser(user);
         advertisement.setCreatedAt(LocalDateTime.now());
         
@@ -76,6 +90,13 @@ public class AdvertisementService {
             categorySubscriptionService.notifySubscribers(savedAd);
         } catch (Exception e) {
             log.error("Failed to notify category subscribers", e);
+        }
+        
+        // Отправляем уведомления модераторам и администраторам
+        try {
+            notifyModeratorsAboutNewAdvertisement(savedAd);
+        } catch (Exception e) {
+            log.error("Failed to notify moderators about new advertisement", e);
         }
         
         // Сохранение изображений
@@ -114,12 +135,23 @@ public class AdvertisementService {
         advertisement.setTitle(dto.getTitle());
         advertisement.setDescription(dto.getDescription());
         advertisement.setCategory(Advertisement.Category.valueOf(dto.getCategory()));
+        
+        // Устанавливаем подкатегорию, если указана
+        if (dto.getSubcategoryId() != null) {
+            fi.newdoska.doska.entity.Subcategory subcategory = 
+                subcategoryRepository.findById(dto.getSubcategoryId()).orElse(null);
+            advertisement.setSubcategory(subcategory);
+        } else {
+            advertisement.setSubcategory(null);
+        }
+        
         advertisement.setType(Advertisement.AdvertisementType.valueOf(dto.getType()));
         advertisement.setPrice(dto.getPrice());
         advertisement.setLocation(dto.getLocation());
         advertisement.setCity(dto.getCity());
         advertisement.setPremium(dto.isPremium());
         advertisement.setUrgent(dto.isUrgent());
+        advertisement.setShowPhone(dto.getShowPhone() != null ? dto.getShowPhone() : false);
         advertisement.setUpdatedAt(LocalDateTime.now());
         
         // Если редактирует не модератор/админ, то объявление снова идет на модерацию
@@ -254,6 +286,60 @@ public class AdvertisementService {
         notificationService.notifyAdvertisementRejected(advertisement.getUser(), advertisement.getTitle(), reason);
     }
     
+    private void notifyModeratorsAboutNewAdvertisement(Advertisement advertisement) {
+        try {
+            List<User> moderators = userRepository.findAllModeratorsAndAdmins();
+            
+            for (User moderator : moderators) {
+                // Email уведомление
+                try {
+                    emailService.sendModerationNotification(moderator, advertisement);
+                } catch (Exception e) {
+                    log.error("Failed to send email notification to moderator {}", moderator.getId(), e);
+                }
+                
+                // Telegram уведомление
+                if (moderator.getTelegramId() != null) {
+                    try {
+                        // Получаем бота из контекста, чтобы избежать циклических зависимостей
+                        fi.newdoska.doska.telegram.VfinkeTelegramBot telegramBot = 
+                            applicationContext.getBean(fi.newdoska.doska.telegram.VfinkeTelegramBot.class);
+                        
+                        if (telegramBot != null) {
+                            String telegramMessage = String.format(
+                                "🔔 <b>Новое объявление требует модерации</b>\n\n" +
+                                "📋 <b>%s</b>\n" +
+                                "📂 Категория: %s\n" +
+                                "👤 Автор: %s %s (@%s)\n" +
+                                "💰 Цена: %s\n" +
+                                "📍 Город: %s\n\n" +
+                                "📝 %s\n\n" +
+                                "🔗 <a href=\"https://ruomi.fi/moderator/dashboard\">Перейти к модерации</a>",
+                                advertisement.getTitle(),
+                                advertisement.getCategory().getDisplayName(),
+                                advertisement.getUser().getFirstName(),
+                                advertisement.getUser().getLastName(),
+                                advertisement.getUser().getUsername(),
+                                advertisement.getPrice() != null ? advertisement.getPrice() + " €" : "Не указана",
+                                advertisement.getCity() != null ? advertisement.getCity() : "Не указан",
+                                advertisement.getDescription().length() > 150 
+                                    ? advertisement.getDescription().substring(0, 150) + "..." 
+                                    : advertisement.getDescription()
+                            );
+                            telegramBot.sendMessage(moderator.getTelegramId(), telegramMessage);
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to send Telegram notification to moderator {}", moderator.getId(), e);
+                    }
+                }
+            }
+            
+            log.info("Notified {} moderators about new advertisement {}", moderators.size(), advertisement.getId());
+        } catch (Exception e) {
+            log.error("Error notifying moderators about new advertisement", e);
+        }
+    }
+    
     public void incrementViews(Long id) {
         advertisementRepository.findById(id).ifPresent(advertisement -> {
             advertisement.setViews(advertisement.getViews() + 1);
@@ -278,11 +364,37 @@ public class AdvertisementService {
     }
     
     public List<Advertisement> getAllAdvertisements() {
-        return advertisementRepository.findAll();
+        // Загружаем объявления с пользователями через JOIN FETCH для избежания LazyInitializationException
+        return advertisementRepository.findAll().stream()
+                .map(ad -> {
+                    // Инициализируем прокси User, вызывая getUsername
+                    if (ad.getUser() != null) {
+                        try {
+                            ad.getUser().getUsername();
+                        } catch (Exception e) {
+                            log.warn("Error initializing user for advertisement {}: {}", ad.getId(), e.getMessage());
+                        }
+                    }
+                    return ad;
+                })
+                .toList();
     }
     
     public List<Advertisement> getAdvertisementsByUser(User user) {
-        return advertisementRepository.findByUserId(user.getId());
+        // Загружаем объявления и инициализируем User прокси для избежания LazyInitializationException
+        return advertisementRepository.findByUserId(user.getId()).stream()
+                .map(ad -> {
+                    // Инициализируем прокси User, вызывая getUsername
+                    if (ad.getUser() != null) {
+                        try {
+                            ad.getUser().getUsername();
+                        } catch (Exception e) {
+                            log.warn("Error initializing user for advertisement {}: {}", ad.getId(), e.getMessage());
+                        }
+                    }
+                    return ad;
+                })
+                .toList();
     }
     
     public Advertisement saveAdvertisement(Advertisement advertisement) {

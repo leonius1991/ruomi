@@ -4,6 +4,7 @@ import fi.newdoska.doska.dto.UserDto;
 import fi.newdoska.doska.entity.User;
 import fi.newdoska.doska.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class UserService implements UserDetailsService {
     
     private final UserRepository userRepository;
@@ -81,21 +83,35 @@ public class UserService implements UserDetailsService {
     }
     
     public boolean verifyEmail(String token) {
+        User user = verifyEmailAndGetUser(token);
+        return user != null;
+    }
+    
+    public User verifyEmailAndGetUser(String token) {
         Optional<User> userOpt = userRepository.findByVerificationToken(token);
         
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             
-            if (user.getVerificationTokenExpiry().isAfter(LocalDateTime.now())) {
+            if (user.getVerificationTokenExpiry() != null && 
+                user.getVerificationTokenExpiry().isAfter(LocalDateTime.now())) {
                 user.setEnabled(true);
                 user.setVerificationToken(null);
                 user.setVerificationTokenExpiry(null);
                 userRepository.save(user);
-                return true;
+                
+                // Отправляем welcome email после успешной верификации
+                try {
+                    emailService.sendWelcomeEmail(user);
+                } catch (Exception e) {
+                    log.error("Failed to send welcome email", e);
+                }
+                
+                return user;
             }
         }
         
-        return false;
+        return null;
     }
     
     public void updateLastLogin(String username) {
@@ -121,6 +137,24 @@ public class UserService implements UserDetailsService {
         return userRepository.countUsersCreatedAfter(LocalDateTime.now().minusDays(30));
     }
     
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь с таким email не найден"));
+        
+        if (user.isEnabled()) {
+            throw new RuntimeException("Аккаунт уже подтвержден");
+        }
+        
+        // Генерируем новый токен
+        String verificationToken = UUID.randomUUID().toString();
+        user.setVerificationToken(verificationToken);
+        user.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
+        userRepository.save(user);
+        
+        // Отправляем email
+        emailService.sendVerificationEmail(user);
+    }
+    
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
@@ -131,6 +165,22 @@ public class UserService implements UserDetailsService {
         
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+    
+    /**
+     * Установка пароля без проверки старого (для Telegram пользователей)
+     */
+    public void setPassword(Long userId, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new RuntimeException("Пароль должен содержать минимум 6 символов");
+        }
+        
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Password set for user: {}", user.getUsername());
     }
     
     public void resetPassword(String email) {

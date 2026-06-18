@@ -37,6 +37,7 @@ public class GitHubUpdateService {
         private String version;
         private String tagName;
         private String downloadUrl;
+        private String resourcesUrl; // URL для скачивания ресурсов
         private String releaseNotes;
         private String publishedAt;
         private boolean isNewer;
@@ -51,6 +52,9 @@ public class GitHubUpdateService {
         
         public String getDownloadUrl() { return downloadUrl; }
         public void setDownloadUrl(String downloadUrl) { this.downloadUrl = downloadUrl; }
+        
+        public String getResourcesUrl() { return resourcesUrl; }
+        public void setResourcesUrl(String resourcesUrl) { this.resourcesUrl = resourcesUrl; }
         
         public String getReleaseNotes() { return releaseNotes; }
         public void setReleaseNotes(String releaseNotes) { this.releaseNotes = releaseNotes; }
@@ -69,10 +73,10 @@ public class GitHubUpdateService {
             return null;
         }
         
+        String url = String.format("https://api.github.com/repos/%s/%s/releases/latest", 
+                githubOwner, githubRepo);
+        
         try {
-            String url = String.format("https://api.github.com/repos/%s/%s/releases/latest", 
-                    githubOwner, githubRepo);
-            
             HttpHeaders headers = new HttpHeaders();
             if (githubToken != null && !githubToken.isEmpty()) {
                 headers.set("Authorization", "token " + githubToken);
@@ -92,13 +96,16 @@ public class GitHubUpdateService {
                 release.setReleaseNotes(json.has("body") ? json.get("body").asText() : "");
                 release.setPublishedAt(json.has("published_at") ? json.get("published_at").asText() : "");
                 
-                // Ищем JAR файл в assets
+                // Ищем JAR файл и ресурсы в assets
                 if (json.has("assets")) {
                     for (JsonNode asset : json.get("assets")) {
                         String name = asset.get("name").asText();
+                        String downloadUrl = asset.get("browser_download_url").asText();
+                        
                         if (name.endsWith(".jar") && !name.contains("sources") && !name.contains("javadoc")) {
-                            release.setDownloadUrl(asset.get("browser_download_url").asText());
-                            break;
+                            release.setDownloadUrl(downloadUrl);
+                        } else if (name.contains("resources") && name.endsWith(".zip")) {
+                            release.setResourcesUrl(downloadUrl);
                         }
                     }
                 }
@@ -108,6 +115,27 @@ public class GitHubUpdateService {
                 release.setNewer(isVersionNewer(release.getVersion(), currentVersion));
                 
                 return release;
+            } else {
+                log.error("GitHub API вернул статус: {} для URL: {}", response.getStatusCode(), url);
+                if (response.getStatusCode().value() == 403) {
+                    log.error("403 Forbidden - проверьте настройки GitHub token");
+                }
+            }
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            if (e.getStatusCode().value() == 403) {
+                log.error("GitHub API вернул 403 Forbidden при получении последнего релиза");
+                log.error("URL: {}", url);
+                log.error("Проверьте:");
+                log.error("1. Настройку app.update.github.token в application.properties");
+                log.error("2. Права доступа токена (нужны права на чтение репозитория)");
+                log.error("3. Является ли репозиторий приватным (для приватных нужен токен)");
+                if (githubToken == null || githubToken.isEmpty()) {
+                    log.error("GitHub token не настроен!");
+                }
+            } else if (e.getStatusCode().value() == 404) {
+                log.error("Репозиторий не найден: {}/{}", githubOwner, githubRepo);
+            } else {
+                log.error("Ошибка HTTP при получении последнего релиза: {}", e.getStatusCode(), e);
             }
         } catch (Exception e) {
             log.error("Ошибка при получении последнего релиза с GitHub", e);
@@ -152,9 +180,12 @@ public class GitHubUpdateService {
                     if (releaseJson.has("assets")) {
                         for (JsonNode asset : releaseJson.get("assets")) {
                             String name = asset.get("name").asText();
+                            String downloadUrl = asset.get("browser_download_url").asText();
+                            
                             if (name.endsWith(".jar") && !name.contains("sources") && !name.contains("javadoc")) {
-                                release.setDownloadUrl(asset.get("browser_download_url").asText());
-                                break;
+                                release.setDownloadUrl(downloadUrl);
+                            } else if (name.contains("resources") && name.endsWith(".zip")) {
+                                release.setResourcesUrl(downloadUrl);
                             }
                         }
                     }
@@ -163,14 +194,26 @@ public class GitHubUpdateService {
                     releaseList.add(release);
                 }
                 
-                return releaseList;
+                    return releaseList;
+                } else {
+                    log.error("GitHub API вернул статус: {}", response.getStatusCode());
+                    if (response.getStatusCode().value() == 403) {
+                        log.error("403 Forbidden - проверьте настройки GitHub token и права доступа");
+                    }
+                }
+            } catch (org.springframework.web.client.HttpClientErrorException e) {
+                if (e.getStatusCode().value() == 403) {
+                    log.error("GitHub API вернул 403 Forbidden при получении списка релизов");
+                    log.error("Проверьте настройки: app.update.github.token в application.properties");
+                } else {
+                    log.error("Ошибка HTTP при получении списка релизов с GitHub: {}", e.getStatusCode(), e);
+                }
+            } catch (Exception e) {
+                log.error("Ошибка при получении списка релизов с GitHub", e);
             }
-        } catch (Exception e) {
-            log.error("Ошибка при получении списка релизов с GitHub", e);
+            
+            return new ArrayList<>();
         }
-        
-        return new ArrayList<>();
-    }
     
     private String extractVersionFromTag(String tag) {
         // Убираем префикс "v" если есть (например, v1.0.0 -> 1.0.0)
@@ -182,16 +225,62 @@ public class GitHubUpdateService {
     
     private boolean isVersionNewer(String newVersion, String currentVersion) {
         try {
-            // Простое сравнение версий (можно улучшить)
-            // Убираем -SNAPSHOT для сравнения
-            String cleanNew = newVersion.replace("-SNAPSHOT", "");
-            String cleanCurrent = currentVersion.replace("-SNAPSHOT", "");
+            if (newVersion == null || currentVersion == null) {
+                return false;
+            }
             
-            // Сравниваем строки (для более точного сравнения можно использовать библиотеку)
+            // Убираем префикс "v" если есть
+            String cleanNew = newVersion.replaceFirst("^v", "").replace("-SNAPSHOT", "");
+            String cleanCurrent = currentVersion.replaceFirst("^v", "").replace("-SNAPSHOT", "");
+            
+            // Если версии одинаковые, это не новая версия
+            if (cleanNew.equals(cleanCurrent)) {
+                return false;
+            }
+            
+            // Разбиваем версии на части
+            String[] newParts = cleanNew.split("\\.");
+            String[] currentParts = cleanCurrent.split("\\.");
+            
+            int maxLength = Math.max(newParts.length, currentParts.length);
+            
+            for (int i = 0; i < maxLength; i++) {
+                int newPart = 0;
+                int currentPart = 0;
+                
+                try {
+                    if (i < newParts.length) {
+                        // Убираем нечисловые символы
+                        newPart = Integer.parseInt(newParts[i].replaceAll("[^0-9]", ""));
+                    }
+                    if (i < currentParts.length) {
+                        currentPart = Integer.parseInt(currentParts[i].replaceAll("[^0-9]", ""));
+                    }
+                } catch (NumberFormatException e) {
+                    // Если не число, сравниваем как строки
+                    String newStr = i < newParts.length ? newParts[i] : "";
+                    String currentStr = i < currentParts.length ? currentParts[i] : "";
+                    int compare = newStr.compareTo(currentStr);
+                    if (compare != 0) {
+                        return compare > 0;
+                    }
+                    continue;
+                }
+                
+                if (newPart > currentPart) {
+                    return true;
+                } else if (newPart < currentPart) {
+                    return false;
+                }
+            }
+            
+            // Если все части равны, но строки разные, считаем новой версией
             return !cleanNew.equals(cleanCurrent);
         } catch (Exception e) {
-            log.warn("Ошибка при сравнении версий: {} и {}", newVersion, currentVersion);
-            return false;
+            log.warn("Ошибка при сравнении версий: {} и {}", newVersion, currentVersion, e);
+            // В случае ошибки считаем, что это новая версия, если строки разные
+            return newVersion != null && currentVersion != null && 
+                   !newVersion.equals(currentVersion);
         }
     }
 }

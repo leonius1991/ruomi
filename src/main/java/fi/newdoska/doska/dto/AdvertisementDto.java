@@ -26,6 +26,8 @@ public class AdvertisementDto {
     @NotNull(message = "Категория обязательна")
     private String category;
     
+    private Long subcategoryId;
+    
     private String type = "SALE";
     
     private BigDecimal price;
@@ -37,6 +39,7 @@ public class AdvertisementDto {
     private String status;
     private boolean premium = false;
     private boolean urgent = false;
+    private Boolean showPhone = false;
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -59,11 +59,17 @@ public class UpdateController {
                 response.put("releaseNotes", latestRelease.getReleaseNotes());
                 response.put("publishedAt", latestRelease.getPublishedAt());
             }
-        } catch (Exception e) {
-            log.error("Ошибка при проверке обновлений", e);
-            response.put("success", false);
-            response.put("error", e.getMessage());
-        }
+            } catch (Exception e) {
+                log.error("Ошибка при проверке обновлений", e);
+                response.put("success", false);
+                String errorMessage = e.getMessage();
+                if (errorMessage != null && errorMessage.contains("403")) {
+                    errorMessage = "Ошибка доступа к GitHub (403 Forbidden). " +
+                            "Проверьте настройки GitHub token в application.properties. " +
+                            "Для приватных репозиториев требуется токен с правами на чтение.";
+                }
+                response.put("error", errorMessage);
+            }
         
         return ResponseEntity.ok(response);
     }
@@ -104,9 +110,10 @@ public class UpdateController {
             }
             
             String targetVersion = version != null ? version : latestRelease.getVersion();
+            String resourcesUrl = latestRelease.getResourcesUrl();
             
             // Запускаем обновление асинхронно
-            updateService.performUpdate(latestRelease.getDownloadUrl(), targetVersion)
+            updateService.performUpdate(latestRelease.getDownloadUrl(), targetVersion, resourcesUrl)
                     .thenAccept(success -> {
                         if (success) {
                             log.info("Обновление завершено успешно");

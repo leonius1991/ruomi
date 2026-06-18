@@ -27,6 +27,7 @@ public class MainController {
     private final SeoMetadataService seoMetadataService;
     private final SearchAnalyticsService searchAnalyticsService;
     private final BannerService bannerService;
+    private final fi.newdoska.doska.repository.CategoryRepository categoryRepository;
     
     @GetMapping("/")
     public String home(Model model) {
@@ -129,8 +130,15 @@ public class MainController {
                 user.setAdvertisementsCount((int) count);
             }
             
+            // Получаем сущность Category из БД по имени enum для подписки
+            fi.newdoska.doska.entity.Category categoryEntity = null;
+            if (categoryRepository != null) {
+                categoryEntity = categoryRepository.findByName(advertisement.getCategory().name()).orElse(null);
+            }
+            
             model.addAttribute("advertisement", advertisement);
             model.addAttribute("user", user);
+            model.addAttribute("categoryEntity", categoryEntity);
             model.addAttribute("sidebarBanners", bannerService.getActiveBannersByPosition("SIDEBAR"));
         });
         

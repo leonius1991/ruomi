@@ -66,12 +66,20 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Категория <span class="text-danger">*</span></label>
-                                    <select class="form-select" th:field="*{category}" required>
+                                    <select class="form-select" th:field="*{category}" required id="categorySelect">
                                         <option value="">Выберите категорию</option>
+                                        <!-- Для сущностей Category из БД -->
                                         <option th:each="cat : ${categories}" 
-                                                th:value="${cat.name()}" 
-                                                th:text="${cat.getDisplayName()}">
+                                                th:value="${cat.name}" 
+                                                th:text="${cat.displayName}">
                                         </option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Подкатегория</label>
+                                    <select class="form-select" id="subcategorySelect" name="subcategoryId">
+                                        <option value="">Выберите подкатегорию (необязательно)</option>
                                     </select>
                                 </div>
                                 
@@ -132,7 +140,69 @@
     <script th:src="@{/js/cities-autocomplete.js}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            initCityAutocomplete('cityInput');
+            // Инициализация автокомплита городов
+            const cityInput = document.getElementById('city') || document.querySelector('input[name="city"]');
+            if (cityInput && typeof initCityAutocomplete === 'function') {
+                initCityAutocomplete(cityInput.id || 'city');
+            }
+            
+            // Загрузка подкатегорий при выборе категории
+            const categorySelect = document.getElementById('categorySelect');
+            const subcategorySelect = document.getElementById('subcategorySelect');
+            const currentSubcategoryId = /*[[${advertisementDto.subcategoryId}]]*/ null;
+            
+            async function loadSubcategories(categoryName) {
+                if (!categoryName || !subcategorySelect) {
+                    if (subcategorySelect) {
+                        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию (необязательно)</option>';
+                    }
+                    return;
+                }
+                
+                try {
+                    // Находим категорию по name и получаем её id
+                    const categoriesResponse = await fetch('/api/categories');
+                    const categories = await categoriesResponse.json();
+                    const category = categories.find(cat => cat.name === categoryName);
+                    
+                    if (!category) {
+                        subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию (необязательно)</option>';
+                        return;
+                    }
+                    
+                    const subcategoriesResponse = await fetch('/admin/categories/subcategories/' + category.id);
+                    const subcategories = await subcategoriesResponse.json();
+                    
+                    subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию (необязательно)</option>';
+                    subcategories.forEach(subcat => {
+                        const option = document.createElement('option');
+                        option.value = subcat.id;
+                        option.textContent = subcat.displayName;
+                        if (currentSubcategoryId && subcat.id === currentSubcategoryId) {
+                            option.selected = true;
+                        }
+                        subcategorySelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error loading subcategories:', error);
+                    if (subcategorySelect) {
+                        subcategorySelect.innerHTML = '<option value="">Ошибка загрузки подкатегорий</option>';
+                    }
+                }
+            }
+            
+            if (categorySelect) {
+                // Загружаем подкатегории для текущей категории
+                const currentCategory = categorySelect.value;
+                if (currentCategory) {
+                    loadSubcategories(currentCategory);
+                }
+                
+                // Загружаем подкатегории при изменении категории
+                categorySelect.addEventListener('change', function() {
+                    loadSubcategories(this.value);
+                });
+            }
             
             var quill = new Quill('#description-editor', {
                 theme: 'snow',

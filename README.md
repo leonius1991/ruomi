@@ -341,8 +341,8 @@ export JWT_SECRET=your-production-secret
 ## 👥 Команда
 
 - **Разработчик**: vfinke.fi Team
-- **Email**: info@newdoska.fi
-- **Веб-сайт**: https://newdoska.fi
+- **Email**: info@ruomi.fi
+- **Веб-сайт**: https://ruomi.fi
 
 ## 🙏 Благодарности
 
@@ -354,7 +354,7 @@ export JWT_SECRET=your-production-secret
 ## 📞 Поддержка
 
 ### Способы связи
-- **Email**: support@newdoska.fi
+- **Email**: support@ruomi.fi
 - **Telegram**: @newdoska_support
 - **Issues**: GitHub Issues
 

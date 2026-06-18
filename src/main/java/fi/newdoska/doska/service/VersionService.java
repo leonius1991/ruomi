@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -54,20 +55,59 @@ public class VersionService {
         }
     }
     
+    @Transactional
     public String getCurrentVersion() {
-        return appVersionRepository.findByIsCurrentTrue()
-                .map(AppVersion::getVersion)
-                .orElse(currentVersion);
+        List<AppVersion> currentVersions = appVersionRepository.findCurrentVersionsOrdered();
+        
+        if (currentVersions.isEmpty()) {
+            return currentVersion;
+        }
+        
+        // Если несколько текущих версий, исправляем это
+        if (currentVersions.size() > 1) {
+            log.warn("Найдено {} текущих версий, исправляем...", currentVersions.size());
+            // Оставляем только самую новую как текущую
+            AppVersion latest = currentVersions.get(0);
+            for (int i = 1; i < currentVersions.size(); i++) {
+                currentVersions.get(i).setIsCurrent(false);
+                appVersionRepository.save(currentVersions.get(i));
+            }
+            latest.setIsCurrent(true);
+            appVersionRepository.save(latest);
+            return latest.getVersion();
+        }
+        
+        return currentVersions.get(0).getVersion();
     }
     
+    @Transactional
     public AppVersion getCurrentVersionEntity() {
-        return appVersionRepository.findByIsCurrentTrue()
-                .orElseGet(() -> {
-                    AppVersion version = new AppVersion();
-                    version.setVersion(currentVersion);
-                    version.setIsCurrent(true);
-                    return version;
-                });
+        List<AppVersion> currentVersions = appVersionRepository.findCurrentVersionsOrdered();
+        
+        if (currentVersions.isEmpty()) {
+            // Создаем новую запись, если нет текущей версии
+            AppVersion version = new AppVersion();
+            version.setVersion(currentVersion);
+            version.setIsCurrent(true);
+            version.setInstalledAt(LocalDateTime.now());
+            version.setUpdateStatus("SUCCESS");
+            return appVersionRepository.save(version);
+        }
+        
+        // Если несколько текущих версий, исправляем это
+        if (currentVersions.size() > 1) {
+            log.warn("Найдено {} текущих версий, исправляем...", currentVersions.size());
+            // Оставляем только самую новую как текущую
+            AppVersion latest = currentVersions.get(0);
+            for (int i = 1; i < currentVersions.size(); i++) {
+                currentVersions.get(i).setIsCurrent(false);
+                appVersionRepository.save(currentVersions.get(i));
+            }
+            latest.setIsCurrent(true);
+            return appVersionRepository.save(latest);
+        }
+        
+        return currentVersions.get(0);
     }
 }
 

@@ -21,6 +21,7 @@ public class TelegramAuthService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
     
     @Value("${telegram.bot.token}")
     private String botToken;
@@ -39,10 +40,16 @@ public class TelegramAuthService {
             String firstName = telegramData.get("first_name");
             String lastName = telegramData.get("last_name");
             String username = telegramData.get("username");
+            String photoUrl = telegramData.get("photo_url");
             
             // Check if user already exists with this Telegram ID
             User existingUser = userService.findByTelegramId(telegramId);
             if (existingUser != null) {
+                // Обновляем аватарку, если есть
+                if (photoUrl != null && !photoUrl.isEmpty()) {
+                    existingUser.setAvatarUrl(photoUrl);
+                    userService.saveUser(existingUser);
+                }
                 return buildSuccessResult(existingUser, "login");
             }
             
@@ -51,15 +58,31 @@ public class TelegramAuthService {
                 if (userByUsername.isPresent()) {
                     User linkedUser = userByUsername.get();
                     linkedUser.setTelegramId(telegramId);
+                    // Обновляем аватарку, если есть
+                    if (photoUrl != null && !photoUrl.isEmpty()) {
+                        linkedUser.setAvatarUrl(photoUrl);
+                    }
                     userRepository.save(linkedUser);
                     return buildSuccessResult(linkedUser, "link");
                 }
             }
             
-            User newUser = createUserFromTelegramData(telegramId, firstName, lastName, username);
-            User savedUser = userService.saveUser(newUser);
+            UserWithPassword userWithPassword = createUserFromTelegramData(telegramId, firstName, lastName, username, photoUrl);
+            User savedUser = userService.saveUser(userWithPassword.user);
             
-            return buildSuccessResult(savedUser, "register");
+            // Отправляем пароль на email, если есть реальный email (не placeholder)
+            try {
+                emailService.sendTelegramPasswordEmail(savedUser, userWithPassword.temporaryPassword);
+            } catch (Exception e) {
+                log.error("Failed to send password email", e);
+            }
+            
+            // Возвращаем временный пароль для показа пользователю (только один раз)
+            Map<String, Object> result = buildSuccessResult(savedUser, "register");
+            result.put("requiresPasswordSetup", true);
+            result.put("temporaryPassword", userWithPassword.temporaryPassword);
+            
+            return result;
             
         } catch (Exception e) {
             log.error("Error during Telegram authentication", e);
@@ -87,6 +110,38 @@ public class TelegramAuthService {
             userService.saveUser(user);
             
             log.info("Linked Telegram account {} to user {}", telegramId, userId);
+            return true;
+            
+        } catch (Exception e) {
+            log.error("Error linking Telegram account", e);
+            return false;
+        }
+    }
+    
+    /**
+     * Link Telegram account with photo URL
+     */
+    public boolean linkTelegramToUserWithPhoto(Long userId, Long telegramId, String telegramUsername, String photoUrl) {
+        try {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return false;
+            }
+            
+            // Check if this Telegram ID is already linked to another account
+            User existingUserWithTelegram = userService.findByTelegramId(telegramId);
+            if (existingUserWithTelegram != null && !existingUserWithTelegram.getId().equals(userId)) {
+                return false;
+            }
+            
+            user.setTelegramId(telegramId);
+            // Обновляем аватарку, если есть
+            if (photoUrl != null && !photoUrl.isEmpty()) {
+                user.setAvatarUrl(photoUrl);
+            }
+            userService.saveUser(user);
+            
+            log.info("Linked Telegram account {} to user {} with photo", telegramId, userId);
             return true;
             
         } catch (Exception e) {
@@ -146,17 +201,18 @@ public class TelegramAuthService {
     
     /**
      * Create a new user from Telegram data
+     * Returns both user and temporary password
      */
-    private User createUserFromTelegramData(Long telegramId, String firstName, String lastName,
-                                          String username) {
+    private UserWithPassword createUserFromTelegramData(Long telegramId, String firstName, String lastName,
+                                          String username, String photoUrl) {
         User user = new User();
         
         // Generate a unique username if not provided
         String finalUsername = username != null && !username.isEmpty() ? username : 
                               "tg_" + telegramId;
         
-        // Generate a random password for Telegram users
-        String randomPassword = java.util.UUID.randomUUID().toString();
+        // Generate a readable password (8 символов: буквы и цифры)
+        String randomPassword = generateReadablePassword();
         
         user.setUsername(finalUsername);
         user.setEmail("telegram_" + telegramId + "@ruomi.fi"); // Placeholder email
@@ -164,11 +220,28 @@ public class TelegramAuthService {
         user.setFirstName(firstName != null ? firstName : "Telegram");
         user.setLastName(lastName != null ? lastName : "User");
         user.setTelegramId(telegramId);
+        // Сохраняем аватарку из Telegram, если есть
+        if (photoUrl != null && !photoUrl.isEmpty()) {
+            user.setAvatarUrl(photoUrl);
+        }
         user.setRole(User.UserRole.USER);
-        user.setEnabled(true);
+        user.setEnabled(true); // Telegram пользователи сразу активны
         user.setCreatedAt(LocalDateTime.now());
         
-        return user;
+        return new UserWithPassword(user, randomPassword);
+    }
+    
+    /**
+     * Генерирует читаемый пароль (8 символов: буквы и цифры, без похожих символов)
+     */
+    private String generateReadablePassword() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        StringBuilder password = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < 8; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return password.toString();
     }
     
     private Map<String, Object> buildSuccessResult(User user, String action) {
@@ -177,5 +250,18 @@ public class TelegramAuthService {
         payload.put("action", action);
         payload.put("user", user);
         return payload;
+    }
+    
+    /**
+     * Вспомогательный класс для возврата пользователя и временного пароля
+     */
+    private static class UserWithPassword {
+        final User user;
+        final String temporaryPassword;
+        
+        UserWithPassword(User user, String temporaryPassword) {
+            this.user = user;
+            this.temporaryPassword = temporaryPassword;
+        }
     }
 }

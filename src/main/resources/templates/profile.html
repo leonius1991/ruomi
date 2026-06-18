@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title th:text="${isOwnProfile ? 'Мой профиль - ruomi.fi' : user.username + ' - Профиль - ruomi.fi'}">Профиль - ruomi.fi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -64,11 +66,11 @@
                             <div class="card-body">
                                 <!-- Avatar Display/Upload -->
                                 <div class="text-center mb-4">
-                                    <img th:src="${user.avatarUrl != null and !user.avatarUrl.isEmpty() ? '/files/' + user.avatarUrl : 'https://ui-avatars.com/api/?name=' + #strings.replace(user.username, ' ', '+') + '&size=120&background=667eea&color=fff'}" 
-                                         class="rounded-circle mb-3" 
-                                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #667eea;"
+                                    <img th:src="${user.avatarUrl != null and !user.avatarUrl.isEmpty() ? (user.avatarUrl.startsWith('http') ? user.avatarUrl : '/files/' + user.avatarUrl) : 'https://ui-avatars.com/api/?name=' + #strings.replace(user.username, ' ', '+') + '&size=120&background=0E7C66&color=fff'}"
+                                         class="rounded-circle mb-3"
+                                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #0E7C66;"
                                          th:alt="${user.username}"
-                                         onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&size=120&background=667eea&color=fff'">
+                                         onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&size=120&background=0E7C66&color=fff'">
                                     <form th:if="${isOwnProfile}" th:action="@{/profile/upload-avatar}" method="post" enctype="multipart/form-data" class="d-inline">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                         <input type="file" name="avatar" accept="image/*" id="avatarInput" style="display: none;" onchange="this.form.submit()">
@@ -78,53 +80,117 @@
                                     </form>
                                 </div>
                                 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Имя пользователя</label>
-                                            <input type="text" class="form-control" th:value="${user.username}" readonly>
+                                <form th:if="${isOwnProfile}" id="profile-edit-form" th:action="@{/profile/update}" method="post">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Имя пользователя</label>
+                                                <input type="text" class="form-control" th:value="${user.username}" readonly>
+                                                <small class="text-muted">Имя пользователя нельзя изменить</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" th:value="${user.email}" readonly>
+                                                <small class="text-muted">Email нельзя изменить</small>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Email</label>
-                                            <input type="email" class="form-control" th:value="${user.email}" readonly>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Имя</label>
+                                                <input type="text" class="form-control" name="firstName" th:value="${user.firstName}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Фамилия</label>
+                                                <input type="text" class="form-control" name="lastName" th:value="${user.lastName}">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Имя</label>
-                                            <input type="text" class="form-control" th:value="${user.firstName}" readonly>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Телефон</label>
+                                                <input type="tel" class="form-control" name="phone" th:value="${user.phone != null ? user.phone : ''}" placeholder="+358...">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Дата регистрации</label>
+                                                <input type="text" class="form-control" th:value="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}" readonly>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Фамилия</label>
-                                            <input type="text" class="form-control" th:value="${user.lastName}" readonly>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Количество объявлений</label>
+                                                <input type="text" class="form-control" th:value="${user.advertisementsCount != null ? user.advertisementsCount : 0}" readonly>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Телефон</label>
-                                            <input type="tel" class="form-control" th:value="${user.phone != null ? user.phone : 'Не указан'}" readonly>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>Сохранить изменения
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Дата регистрации</label>
-                                            <input type="text" class="form-control" th:value="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}" readonly>
+                                </form>
+                                <div th:if="${!isOwnProfile}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Имя пользователя</label>
+                                                <input type="text" class="form-control" th:value="${user.username}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" th:value="${user.email}" readonly>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Количество объявлений</label>
-                                            <input type="text" class="form-control" th:value="${user.advertisementsCount != null ? user.advertisementsCount : 0}" readonly>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Имя</label>
+                                                <input type="text" class="form-control" th:value="${user.firstName}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Фамилия</label>
+                                                <input type="text" class="form-control" th:value="${user.lastName}" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Телефон</label>
+                                                <input type="tel" class="form-control" th:value="${user.phone != null ? user.phone : 'Не указан'}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Дата регистрации</label>
+                                                <input type="text" class="form-control" th:value="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Количество объявлений</label>
+                                                <input type="text" class="form-control" th:value="${user.advertisementsCount != null ? user.advertisementsCount : 0}" readonly>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -150,25 +216,25 @@
                                         
                                         <!-- Telegram Status -->
                                         <div id="telegram-status" class="mb-3">
-                                            <div class="alert alert-info">
+                                            <div class="alert" th:classappend="${user.telegramId != null ? 'alert-success' : 'alert-info'}">
                                                 <i class="fab fa-telegram me-2"></i>
                                                 <strong>Статус:</strong> 
-                                                <span id="telegram-status-text">Не связан</span>
+                                                <span id="telegram-status-text" th:text="${user.telegramId != null ? 'Связан' : 'Не связан'}">Не связан</span>
                                             </div>
                                         </div>
                                         
                                         <!-- Link/Unlink Buttons -->
                                         <div id="telegram-actions">
-                                            <button type="button" class="btn btn-primary" id="link-telegram-btn">
+                                            <button type="button" class="btn btn-primary" id="link-telegram-btn" th:style="${user.telegramId != null ? 'display: none;' : ''}" onclick="showTelegramWidget()">
                                                 <i class="fab fa-telegram me-2"></i>Связать с Telegram
                                             </button>
-                                            <button type="button" class="btn btn-outline-danger" id="unlink-telegram-btn" style="display: none;">
+                                            <button type="button" class="btn btn-outline-danger" id="unlink-telegram-btn" th:style="${user.telegramId == null ? 'display: none;' : ''}">
                                                 <i class="fas fa-unlink me-2"></i>Отвязать Telegram
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="text-center">
+                                    <div class="col-md-4" th:if="${user.telegramId == null}">
+                                        <div class="text-center" id="telegram-widget-container">
                                             <div id="telegram-login-widget-small"></div>
                                         </div>
                                     </div>
@@ -224,10 +290,10 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Telegram Login Widget Script -->
-    <script async src="https://telegram.org/js/telegram-widget.js?22" 
-            th:attr="data-telegram-login=${@environment.getProperty('telegram.login.widget.bot.username','ruomi_bot')},
-                     data-auth-url=${@environment.getProperty('telegram.login.widget.auth-url','http://localhost:8080/auth/telegram/callback')}"
+    <!-- Telegram Login Widget Script (only show if not linked) -->
+    <script th:if="${user.telegramId == null}" async src="https://telegram.org/js/telegram-widget.js?22" 
+            th:attr="data-telegram-login=${@environment.getProperty('telegram.login.widget.bot.username','ruomi_fi_bot')},
+                     data-auth-url=${@environment.getProperty('telegram.login.widget.auth-url','https://ruomi.fi/auth/telegram/callback')}"
             data-size="medium" 
             data-request-access="write"
             data-onauth="onTelegramAuth(user)"></script>
@@ -242,12 +308,16 @@
         }
         
         function linkTelegramAccount(telegramData) {
+            // Получаем CSRF токен
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || 
+                             document.querySelector('input[name="_csrf"]')?.value || '';
+            
             fetch('/profile/link-telegram', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `telegramId=${telegramData.id}&telegramUsername=${telegramData.username}`
+                body: `telegramId=${telegramData.id}&telegramUsername=${telegramData.username || ''}&_csrf=${csrfToken}`
             })
             .then(response => response.json())
             .then(data => {
@@ -266,10 +336,15 @@
         
         function unlinkTelegramAccount() {
             if (confirm('Вы уверены, что хотите отвязать Telegram аккаунт?')) {
+                // Получаем CSRF токен
+                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || 
+                                 document.querySelector('input[name="_csrf"]')?.value || '';
+                
                 fetch('/profile/unlink-telegram', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
                     }
                 })
                 .then(response => response.json())
@@ -307,7 +382,108 @@
         }
         
         // Event listeners
-        document.getElementById('unlink-telegram-btn').addEventListener('click', unlinkTelegramAccount);
+        const linkBtn = document.getElementById('link-telegram-btn');
+        const unlinkBtn = document.getElementById('unlink-telegram-btn');
+        
+        function showTelegramWidget() {
+            // Сначала открываем вкладку Telegram, если она не открыта
+            const telegramTabLink = document.querySelector('a[href="#telegram"][data-bs-toggle]');
+            const telegramPane = document.querySelector('#telegram');
+            
+            if (telegramTabLink && telegramPane) {
+                // Проверяем, активна ли уже вкладка
+                const isActive = telegramPane.classList.contains('active') && telegramPane.classList.contains('show');
+                
+                if (!isActive) {
+                    // Используем Bootstrap для переключения вкладки
+                    const tab = new bootstrap.Tab(telegramTabLink);
+                    tab.show();
+                    
+                    // Ждем, пока вкладка откроется
+                    telegramPane.addEventListener('shown.bs.tab', function onShown() {
+                        telegramPane.removeEventListener('shown.bs.tab', onShown);
+                        setTimeout(loadTelegramWidget, 100); // Небольшая задержка для рендеринга
+                    }, { once: true });
+                } else {
+                    // Если вкладка уже активна, загружаем сразу
+                    setTimeout(loadTelegramWidget, 100);
+                }
+            } else {
+                // Если вкладок нет, просто пытаемся найти контейнер
+                loadTelegramWidget();
+            }
+        }
+        
+        function loadTelegramWidget() {
+            // Проверяем, загружен ли виджет
+            const widgetContainer = document.getElementById('telegram-widget-container');
+            if (!widgetContainer) {
+                console.error('Telegram widget container not found');
+                // Создаем контейнер, если его нет
+                const telegramActions = document.getElementById('telegram-actions');
+                if (telegramActions && telegramActions.parentElement) {
+                    const container = document.createElement('div');
+                    container.id = 'telegram-widget-container';
+                    container.className = 'text-center mt-3 col-md-4';
+                    // Вставляем после telegram-actions
+                    const parent = telegramActions.parentElement;
+                    if (parent.querySelector('.row')) {
+                        const row = parent.querySelector('.row');
+                        const col = row.querySelector('.col-md-4:last-child');
+                        if (col) {
+                            col.appendChild(container);
+                        } else {
+                            const newCol = document.createElement('div');
+                            newCol.className = 'col-md-4';
+                            newCol.appendChild(container);
+                            row.appendChild(newCol);
+                        }
+                    } else {
+                        parent.appendChild(container);
+                    }
+                    loadWidgetIntoContainer(container);
+                } else {
+                    alert('Ошибка: не удалось найти контейнер для Telegram виджета. Пожалуйста, перейдите на вкладку "Telegram" в настройках профиля.');
+                }
+                return;
+            }
+            
+            loadWidgetIntoContainer(widgetContainer);
+        }
+        
+        function loadWidgetIntoContainer(container) {
+            // Прокручиваем к контейнеру
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Если виджет уже загружен, просто показываем его
+            if (container.querySelector('script[src*="telegram-widget"]')) {
+                return;
+            }
+            
+            // Загружаем виджет динамически, если его еще нет
+            if (!document.getElementById('telegram-widget-script')) {
+                const script = document.createElement('script');
+                script.id = 'telegram-widget-script';
+                script.async = true;
+                script.src = 'https://telegram.org/js/telegram-widget.js?22';
+                script.setAttribute('data-telegram-login', 'ruomi_fi_bot');
+                script.setAttribute('data-auth-url', 'https://ruomi.fi/auth/telegram/callback');
+                script.setAttribute('data-size', 'medium');
+                script.setAttribute('data-request-access', 'write');
+                script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+                
+                container.innerHTML = '';
+                container.appendChild(script);
+            }
+        }
+        
+        if (linkBtn) {
+            // Обработчик уже добавлен через onclick
+        }
+        
+        if (unlinkBtn) {
+            unlinkBtn.addEventListener('click', unlinkTelegramAccount);
+        }
         
         // Change password form
         document.getElementById('change-password-form').addEventListener('submit', function(e) {
@@ -326,9 +502,13 @@
         });
         
         // Check Telegram status on page load
-        // In a real implementation, you would fetch this from the server
-        // For now, we'll assume it's not linked
-        updateTelegramStatus(false);
+        const telegramId = /*[[${user.telegramId}]]*/ null;
+        const telegramUsername = /*[[${user.username}]]*/ '';
+        if (telegramId != null) {
+            updateTelegramStatus(true, telegramUsername);
+        } else {
+            updateTelegramStatus(false);
+        }
     </script>
 </body>
 </html>

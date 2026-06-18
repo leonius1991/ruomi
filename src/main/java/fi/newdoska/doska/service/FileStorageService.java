@@ -68,6 +68,27 @@ public class FileStorageService {
             log.error("Ошибка при удалении файла: {}", fileName, e);
         }
     }
+    
+    public String storeFileFromPath(Path sourcePath) throws IOException {
+        String originalFilename = sourcePath.getFileName().toString();
+        String extension = "";
+        if (originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        
+        String fileName = UUID.randomUUID().toString() + extension;
+        Path uploadPath = Paths.get(uploadDir);
+        
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(sourcePath, filePath, StandardCopyOption.REPLACE_EXISTING);
+        
+        log.info("Файл сохранен из пути: {}", filePath);
+        return fileName;
+    }
 }
 
 

@@ -10,7 +10,7 @@
 ### Шаг 2: Создайте нового бота
 1. Отправьте команду `/newbot`
 2. Введите имя для вашего бота (например: "vfinke.fi Bot")
-3. Введите username для бота (например: "newdoska_bot") - должен заканчиваться на "bot"
+3. Введите username для бота (например: "ruomi_fi_bot") - должен заканчиваться на "bot"
 
 ### Шаг 3: Получите токен
 BotFather выдаст вам токен вида:
@@ -31,7 +31,7 @@ telegram.bot.token=YOUR_BOT_TOKEN
 
 Например:
 ```properties
-telegram.bot.username=newdoska_bot
+telegram.bot.username=ruomi_fi_bot
 telegram.bot.token=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
 ```
 

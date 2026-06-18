@@ -39,7 +39,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer">
+                    <div class="card-footer position-relative">
                         <form id="messageForm" th:action="@{/messages/send}" method="post">
                             <input type="hidden" name="recipientId" th:value="${otherUser.id}">
                             <div class="input-group">
@@ -53,7 +53,7 @@
                                 </button>
                             </div>
                             <div id="emojiPicker" class="position-absolute bg-white border rounded p-2 shadow" 
-                                 style="display: none; z-index: 1000; max-width: 300px;">
+                                 style="display: none; z-index: 9999; max-width: 300px; bottom: 100%; left: 0; margin-bottom: 5px;">
                                 <div class="d-flex flex-wrap" id="emojiContainer"></div>
                             </div>
                         </form>
@@ -68,9 +68,10 @@
         // Emoji picker
         const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾'];
         
-        document.getElementById('emojiBtn').addEventListener('click', function() {
+        document.getElementById('emojiBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
             const picker = document.getElementById('emojiPicker');
-            if (picker.style.display === 'none') {
+            if (picker.style.display === 'none' || picker.style.display === '') {
                 picker.style.display = 'block';
                 const container = document.getElementById('emojiContainer');
                 if (container.children.length === 0) {
@@ -88,6 +89,15 @@
                     });
                 }
             } else {
+                picker.style.display = 'none';
+            }
+        });
+        
+        // Закрываем окно смайликов при клике вне его
+        document.addEventListener('click', function(e) {
+            const picker = document.getElementById('emojiPicker');
+            const emojiBtn = document.getElementById('emojiBtn');
+            if (picker && !picker.contains(e.target) && !emojiBtn.contains(e.target)) {
                 picker.style.display = 'none';
             }
         });

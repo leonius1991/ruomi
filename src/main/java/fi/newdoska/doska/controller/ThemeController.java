@@ -40,7 +40,7 @@ public class ThemeController {
             "  --hero-gradient-end: %s;\n" +
             "}\n\n" +
             "body { font-size: var(--base-font-size) !important; }\n" +
-            "h1, h2, h3, h4, h5, h6 { font-size: var(--heading-font-size) !important; }\n" +
+            "/* Размеры заголовков определяются в style.css для каждого уровня отдельно */\n" +
             ".small, small { font-size: var(--small-font-size) !important; }\n" +
             ".large { font-size: var(--large-font-size) !important; }\n" +
             ".card, .btn { border-radius: var(--border-radius) !important; box-shadow: var(--box-shadow) !important; }\n" +

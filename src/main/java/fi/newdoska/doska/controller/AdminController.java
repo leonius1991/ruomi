@@ -8,8 +8,10 @@ import fi.newdoska.doska.entity.User;
 import fi.newdoska.doska.repository.CategoryRepository;
 import fi.newdoska.doska.repository.SeoMetadataRepository;
 import fi.newdoska.doska.repository.SiteThemeRepository;
+import fi.newdoska.doska.service.AdvertisementService;
 import fi.newdoska.doska.service.BroadcastMessageService;
 import fi.newdoska.doska.service.CategorySubscriptionService;
+import fi.newdoska.doska.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,6 +31,18 @@ public class AdminController {
     private final CategorySubscriptionService categorySubscriptionService;
     private final CategoryRepository categoryRepository;
     private final BroadcastMessageService broadcastMessageService;
+    private final UserService userService;
+    private final AdvertisementService advertisementService;
+
+    @GetMapping("/dashboard")
+    public String dashboard(Model model) {
+        model.addAttribute("totalUsers", userService.getTotalUsersCount());
+        model.addAttribute("activeAdvertisements", advertisementService.getTotalApprovedAdvertisementsCount());
+        model.addAttribute("pendingAdvertisements", advertisementService.getPendingAdvertisementsCount());
+        // Жалобы пока не реализованы, ставим 0
+        model.addAttribute("totalReports", 0L);
+        return "admin/dashboard";
+    }
 
     @GetMapping("/seo")
     public String seoEditor(Model model) {

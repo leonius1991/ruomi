@@ -22,6 +22,7 @@ import java.util.Map;
 public class TelegramAuthController {
     
     private final TelegramAuthService telegramAuthService;
+    private final fi.newdoska.doska.service.UserService userService;
     
     /**
      * Handle Telegram login callback
@@ -63,8 +64,9 @@ public class TelegramAuthController {
     @PostMapping("/profile/link-telegram")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> linkTelegramAccount(
-            @RequestParam Long telegramId,
-            @RequestParam String telegramUsername) {
+            @RequestParam(required = false) Long telegramId,
+            @RequestParam(required = false) String telegramUsername,
+            @RequestParam(required = false) String photoUrl) {
         
         try {
             User currentUser = getAuthenticatedUser();
@@ -75,18 +77,39 @@ public class TelegramAuthController {
                 ));
             }
             
-            boolean success = telegramAuthService.linkTelegramToUser(currentUser.getId(), telegramId, telegramUsername);
+            // Если telegramId не передан, значит это вызов из виджета
+            if (telegramId == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "Данные Telegram не получены"
+                ));
+            }
+            
+            boolean success;
+            if (photoUrl != null && !photoUrl.isEmpty()) {
+                success = telegramAuthService.linkTelegramToUserWithPhoto(
+                    currentUser.getId(), telegramId, telegramUsername, photoUrl);
+            } else {
+                success = telegramAuthService.linkTelegramToUser(
+                    currentUser.getId(), telegramId, telegramUsername);
+            }
             
             if (success) {
+                // Обновляем пользователя из БД
+                currentUser = userService.findById(currentUser.getId()).orElse(currentUser);
                 currentUser.setTelegramId(telegramId);
+                if (photoUrl != null && !photoUrl.isEmpty()) {
+                    currentUser.setAvatarUrl(photoUrl);
+                }
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "Telegram account linked successfully"
+                    "message", "Telegram account linked successfully",
+                    "username", telegramUsername != null ? telegramUsername : ""
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "error", "Failed to link Telegram account"
+                    "error", "Не удалось связать аккаунт. Возможно, этот Telegram уже привязан к другому аккаунту."
                 ));
             }
             
@@ -94,7 +117,7 @@ public class TelegramAuthController {
             log.error("Error linking Telegram account", e);
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "error", "Internal server error"
+                "error", "Internal server error: " + e.getMessage()
             ));
         }
     }

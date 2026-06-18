@@ -13,7 +13,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>vfinke.fi - Современная доска объявлений</name>
 	<description>Современный сайт объявлений для русскоязычного населения в Финляндии</description>
-	<url>https://newdoska.fi</url>
+	<url>https://ruomi.fi</url>
 	<licenses>
 		<license>
 			<name>MIT License</name>
@@ -90,6 +90,14 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>

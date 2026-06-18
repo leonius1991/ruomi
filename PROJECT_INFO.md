@@ -150,7 +150,7 @@ newdoska/
 
 - **Документация**: README.md
 - **Быстрый старт**: QUICK_START.md
-- **Email**: support@newdoska.fi
+- **Email**: support@ruomi.fi
 - **Telegram**: @newdoska_support
 
 ## 🎉 Поздравляем!

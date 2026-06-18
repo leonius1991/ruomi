@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.enabled = true AND u.role IN ('USER','PREMIUM')")
     List<User> findAllActiveUsers();
     
+    @Query("SELECT u FROM User u WHERE u.enabled = true AND u.role IN ('MODERATOR', 'ADMIN', 'SUPER_ADMIN')")
+    List<User> findAllModeratorsAndAdmins();
+    
     @Query("SELECT u FROM User u WHERE u.username LIKE %:searchTerm% OR u.firstName LIKE %:searchTerm% OR u.lastName LIKE %:searchTerm%")
     List<User> searchUsers(@Param("searchTerm") String searchTerm);
     

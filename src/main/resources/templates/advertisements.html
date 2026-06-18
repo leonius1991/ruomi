@@ -82,54 +82,35 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-9">
-                    <div th:if="${advertisements != null && !advertisements.empty}" class="row">
-                        <div class="col-lg-4 col-md-6 mb-4" th:each="ad : ${advertisements.content}">
-                    <div class="card h-100 shadow-sm" th:classappend="${ad.isPremium} ? 'premium-ad' : ''">
-                        <div th:if="${ad.images != null and !#lists.isEmpty(ad.images)}" class="position-relative">
-                            <img th:src="@{/files/{fileName}(fileName=${ad.images[0].fileName})}" 
-                                 class="card-img-top" 
-                                 style="height: 200px; object-fit: cover;"
-                                 th:alt="${ad.title}">
-                            <span class="premium-badge position-absolute top-0 end-0 m-2" th:if="${ad.isPremium}">
-                                <i class="fas fa-star"></i> ПРЕМИУМ
-                            </span>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <span class="badge bg-primary" th:if="${ad.isPremium}">
+                    <div th:if="${advertisements != null && !advertisements.empty}" class="row g-3">
+                        <div class="col-lg-4 col-md-6 col-6 mb-1" th:each="ad : ${advertisements.content}">
+                            <div class="ad-card" th:style="${ad.isPremium} ? 'border-color:#F2C14E;' : (${ad.isUrgent} ? 'border-color:#E0573F;' : '')">
+                                <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-media d-block">
+                                    <img th:if="${ad.images != null and !#lists.isEmpty(ad.images)}"
+                                         th:src="@{/files/{fileName}(fileName=${ad.images[0].fileName})}" th:alt="${ad.title}">
+                                    <div th:if="${ad.images == null or #lists.isEmpty(ad.images)}" class="ad-noimg">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                    <span class="ad-badge position-absolute" th:if="${ad.isPremium}" style="top:0.55rem; left:0.55rem; background:#F2C14E; color:#1F3D35; margin:0;">
                                         <i class="fas fa-star me-1"></i>Премиум
                                     </span>
-                                    <span class="badge bg-danger" th:if="${ad.isUrgent}">
+                                    <span class="ad-badge position-absolute" th:if="${ad.isUrgent and !ad.isPremium}" style="top:0.55rem; left:0.55rem; background:#E0573F; color:#fff; margin:0;">
                                         <i class="fas fa-exclamation-triangle me-1"></i>Срочно
                                     </span>
-                                    <span class="badge bg-secondary" th:text="${ad.category.getDisplayName()}">Категория</span>
-                                </div>
-                                <small class="text-muted" th:text="${#temporals.format(ad.createdAt, 'dd.MM.yyyy')}">01.01.2024</small>
-                            </div>
-                            <h5 class="card-title">
-                                <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="text-decoration-none" th:text="${ad.title}">Заголовок</a>
-                            </h5>
-                            <div class="card-text text-muted" th:utext="${#strings.abbreviate(ad.description, 150)}">Описание...</div>
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <div>
-                                    <span class="h5 text-primary mb-0" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
-                                    <span class="text-muted" th:if="${ad.price == null}">Цена не указана</span>
-                                </div>
-                                <div class="text-end">
-                                    <small class="text-muted d-block" th:text="${ad.city}">Город</small>
-                                    <small class="text-muted" th:text="${ad.views + ' просмотров'}">0 просмотров</small>
+                                    <span class="price-chip" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                                    <span class="price-chip" th:if="${ad.price == null}">Цена не указана</span>
+                                </a>
+                                <div class="ad-body">
+                                    <span class="ad-badge" th:text="${ad.category.getDisplayName()}">Категория</span>
+                                    <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-title text-decoration-none" th:text="${ad.title}">Заголовок</a>
+                                    <div class="ad-meta d-flex align-items-center justify-content-between">
+                                        <span><i class="fas fa-map-marker-alt me-1"></i><span th:text="${ad.city}">Город</span></span>
+                                        <span><i class="fas fa-eye me-1"></i><span th:text="${ad.views}">0</span></span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-footer bg-transparent">
-                            <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="btn btn-primary btn-sm w-100">
-                                <i class="fas fa-eye me-1"></i>Подробнее
-                            </a>
                         </div>
                     </div>
-                </div>
-            </div>
             
             <div th:if="${advertisements == null || advertisements.empty}" class="text-center py-5">
                 <i class="fas fa-inbox fa-4x text-muted mb-3"></i>

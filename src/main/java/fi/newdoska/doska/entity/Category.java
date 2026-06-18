@@ -1,5 +1,6 @@
 package fi.newdoska.doska.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,9 +36,11 @@ public class Category {
     private Boolean active = true;
     
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Subcategory> subcategories = new ArrayList<>();
     
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<AdvertisementTypeEntity> advertisementTypes = new ArrayList<>();
 }
 

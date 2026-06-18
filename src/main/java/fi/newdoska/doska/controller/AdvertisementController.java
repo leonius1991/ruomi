@@ -24,11 +24,14 @@ public class AdvertisementController {
     
     private final AdvertisementService advertisementService;
     private final UserService userService;
+    private final fi.newdoska.doska.repository.CategoryRepository categoryRepository;
+    private final fi.newdoska.doska.repository.SubcategoryRepository subcategoryRepository;
     
     @GetMapping("/create-advertisement")
     public String showCreateForm(Model model) {
         model.addAttribute("advertisementDto", new AdvertisementDto());
-        model.addAttribute("categories", Advertisement.Category.values());
+        // Загружаем категории из БД
+        model.addAttribute("categories", categoryRepository.findByActiveTrueOrderBySortOrderAsc());
         model.addAttribute("allTypes", Advertisement.AdvertisementType.values());
         return "create-advertisement";
     }
@@ -92,11 +95,21 @@ public class AdvertisementController {
     
     @GetMapping("/edit-advertisement/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
+        // Проверяем авторизацию
+        String username = getCurrentUsername();
+        if (username == null) {
+            return "redirect:/login";
+        }
+        
         Advertisement advertisement = advertisementService.getAdvertisementById(id)
                 .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
         
-        String username = getCurrentUsername();
-        User user = (User) userService.loadUserByUsername(username);
+        User user;
+        try {
+            user = (User) userService.loadUserByUsername(username);
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
         
         // Проверяем права на редактирование
         if (!advertisement.getUser().getId().equals(user.getId()) && 
@@ -115,11 +128,30 @@ public class AdvertisementController {
         dto.setCity(advertisement.getCity());
         dto.setPremium(advertisement.isPremium());
         dto.setUrgent(advertisement.isUrgent());
+        dto.setShowPhone(advertisement.getShowPhone());
+        if (advertisement.getSubcategory() != null) {
+            dto.setSubcategoryId(advertisement.getSubcategory().getId());
+        }
         
         model.addAttribute("advertisementDto", dto);
-        model.addAttribute("categories", Advertisement.Category.values());
+        // Загружаем категории из БД
+        try {
+            if (categoryRepository != null) {
+                model.addAttribute("categories", categoryRepository.findByActiveTrueOrderBySortOrderAsc());
+            } else {
+                // Fallback на enum категории
+                model.addAttribute("categories", java.util.Arrays.asList(Advertisement.Category.values()));
+            }
+        } catch (Exception e) {
+            // Fallback на enum категории при ошибке
+            model.addAttribute("categories", java.util.Arrays.asList(Advertisement.Category.values()));
+        }
         model.addAttribute("types", Advertisement.AdvertisementType.values());
-        model.addAttribute("images", advertisement.getImages());
+        if (advertisement.getImages() != null) {
+            model.addAttribute("images", advertisement.getImages());
+        } else {
+            model.addAttribute("images", java.util.Collections.emptyList());
+        }
         return "edit-advertisement";
     }
     

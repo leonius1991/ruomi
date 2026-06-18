@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное - ruomi.fi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/theme/css}">
+</head>
+<body>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <!-- Notification Bar -->
+    <div th:replace="~{fragments/notifications :: notification-bar}"></div>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4">
+                    <i class="fas fa-heart me-2 text-danger"></i>Избранное
+                </h2>
+                
+                <div th:if="${advertisements != null and !advertisements.isEmpty()}">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-4 col-lg-3" th:each="ad : ${advertisements}">
+                            <div class="ad-card">
+                                <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-media d-block">
+                                    <img th:if="${ad.images != null and !#lists.isEmpty(ad.images)}"
+                                         th:src="@{/files/{fileName}(fileName=${ad.images[0].fileName})}" th:alt="${ad.title}">
+                                    <div th:if="${ad.images == null or #lists.isEmpty(ad.images)}" class="ad-noimg">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                    <span class="price-chip" th:if="${ad.price != null}" th:text="${'€' + ad.price}">€100</span>
+                                    <span class="price-chip" th:if="${ad.price == null}">Цена не указана</span>
+                                </a>
+                                <div class="ad-body">
+                                    <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-title text-decoration-none" th:text="${ad.title}">Заголовок</a>
+                                    <div class="ad-meta d-flex align-items-center justify-content-between">
+                                        <span><i class="fas fa-map-marker-alt me-1"></i><span th:text="${ad.city}">Город</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav th:if="${totalPages > 1}" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/favorites(page=${currentPage - 1})}">Предыдущая</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                                th:classappend="${i == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{/favorites(page=${i})}" th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/favorites(page=${currentPage + 1})}">Следующая</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <div th:if="${advertisements == null or advertisements.isEmpty()}" class="text-center py-5">
+                    <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">У вас пока нет избранных объявлений</h4>
+                    <p class="text-muted">Добавьте объявления в избранное, чтобы не потерять их</p>
+                    <a href="/advertisements" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Найти объявления
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

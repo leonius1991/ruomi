@@ -1,5 +1,6 @@
 package fi.newdoska.doska.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,8 +23,12 @@ public class Subcategory {
     @Column(nullable = false)
     private String displayName;
     
+    @Column
+    private String icon;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnore
     private Category parentCategory;
     
     @Column
@@ -31,6 +36,10 @@ public class Subcategory {
     
     @Column(nullable = false)
     private Boolean active = true;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "advertisement_type_id")
+    private AdvertisementTypeEntity advertisementType; // Тип объявления для этой подкатегории (может быть null)
 }
 
 

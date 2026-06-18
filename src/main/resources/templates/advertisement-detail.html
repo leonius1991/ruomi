@@ -16,28 +16,30 @@
             margin: 0 auto;
         }
         .ad-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(110deg, var(--warm-teal, #0E7C66) 0%, var(--warm-green, #2E9E6B) 100%);
             color: white;
             padding: 2rem;
-            border-radius: 12px;
+            border-radius: 18px;
             margin-bottom: 2rem;
         }
         .ad-content {
-            background: white;
-            border-radius: 12px;
+            background: var(--warm-card, #fff);
+            border: 1px solid var(--warm-line, #ECE6DB);
+            border-radius: 18px;
             padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: var(--warm-shadow, 0 8px 24px rgba(31,61,53,0.08));
         }
         .ad-image-gallery img {
-            border-radius: 8px;
+            border-radius: 12px;
             transition: transform 0.3s;
         }
         .ad-image-gallery img:hover {
             transform: scale(1.05);
         }
         .user-card {
-            background: #f8f9fa;
-            border-radius: 12px;
+            background: var(--warm-cream-2, #f8f9fa);
+            border: 1px solid var(--warm-line, #ECE6DB);
+            border-radius: 18px;
             padding: 1.5rem;
         }
         .user-avatar {
@@ -45,7 +47,7 @@
             height: 80px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #667eea;
+            border: 3px solid var(--warm-teal, #0E7C66);
         }
     </style>
 </head>
@@ -78,6 +80,12 @@
                             <h3 class="mb-0 fw-light" th:if="${advertisement.price != null}" 
                                 th:text="${'€' + advertisement.price}">€100</h3>
                             <span class="text-white-50" th:if="${advertisement.price == null}">Цена не указана</span>
+                            <div class="mt-2" sec:authorize="hasAnyRole('ADMIN', 'SUPER_ADMIN', 'MODERATOR')">
+                                <a th:href="@{/edit-advertisement/{id}(id=${advertisement.id})}" 
+                                   class="btn btn-sm btn-light">
+                                    <i class="fas fa-edit me-1"></i>Редактировать
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -105,7 +113,7 @@
                     </div>
                     
                     <!-- Details -->
-                    <div class="row g-3 text-muted small">
+                    <div class="row g-3 text-muted small mb-4">
                         <div class="col-md-6">
                             <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i><strong>Город:</strong> <span th:text="${advertisement.city}">Город</span></p>
                             <p class="mb-2"><i class="fas fa-calendar me-2 text-primary"></i><strong>Опубликовано:</strong> 
@@ -116,6 +124,61 @@
                             <p class="mb-2"><i class="fas fa-eye me-2 text-primary"></i><strong>Просмотров:</strong> <span th:text="${advertisement.views}">0</span></p>
                             <p class="mb-2"><i class="fas fa-tag me-2 text-primary"></i><strong>Тип:</strong> <span th:text="${advertisement.type.getDisplayName()}">Тип</span></p>
                         </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mb-4" sec:authorize="isAuthenticated()">
+                        <!-- Кнопка "Написать автору" - показываем всегда для авторизованных, кроме случая когда это свое объявление -->
+                        <a th:href="@{/messages/conversation/{userId}(userId=${user.id})}" 
+                           class="btn btn-primary btn-lg"
+                           th:if="${user != null and (authentication == null or authentication.principal == null or authentication.principal.id != user.id)}">
+                            <i class="fas fa-envelope me-2"></i>Написать автору
+                        </a>
+                        <!-- Кнопка "Добавить в избранное" - для всех авторизованных -->
+                        <button class="btn btn-outline-danger" id="favoriteBtn" th:data-ad-id="${advertisement.id}" onclick="toggleFavorite(this)">
+                            <i class="far fa-heart me-2"></i><span class="favorite-text">Добавить в избранное</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Subscribe to Category -->
+                    <div class="alert alert-info mb-4" sec:authorize="isAuthenticated()">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-bell me-2"></i>Не пропустите новые объявления!
+                        </h6>
+                        <p class="mb-2">
+                            Мы можем прислать вам уведомление в Telegram или на email о новых объявлениях в категории 
+                            <strong th:text="${categoryEntity != null ? categoryEntity.displayName : advertisement.category.getDisplayName()}">Категория</strong>.
+                        </p>
+                        <!-- Проверяем текущего пользователя (authentication.principal), а не автора объявления -->
+                        <div th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId == null and (authentication.principal.email == null or authentication.principal.email.isEmpty())}">
+                            <p class="small mb-2">Для подписки на уведомления нужно указать Telegram или Email в профиле.</p>
+                            <a href="/profile" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-user me-1"></i>Перейти в профиль
+                            </a>
+                        </div>
+                        <div th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId == null and authentication.principal.email != null and !authentication.principal.email.isEmpty()}">
+                            <button class="btn btn-sm btn-primary" th:data-category-id="${categoryEntity != null ? categoryEntity.id : ''}" onclick="subscribeToCategory(this)" th:if="${categoryEntity != null}">
+                                <i class="fas fa-bell me-1"></i>Подписаться на категорию
+                            </button>
+                            <p class="small text-muted mt-2 mb-0">Уведомления будут приходить на email</p>
+                        </div>
+                        <div th:if="${authentication != null and authentication.principal != null and authentication.principal.telegramId != null}">
+                            <button class="btn btn-sm btn-primary" th:data-category-id="${categoryEntity != null ? categoryEntity.id : ''}" onclick="subscribeToCategory(this)" th:if="${categoryEntity != null}">
+                                <i class="fas fa-bell me-1"></i>Подписаться на категорию
+                            </button>
+                            <p class="small text-muted mt-2 mb-0" th:if="${authentication.principal.email == null or authentication.principal.email.isEmpty()}">Уведомления будут приходить в Telegram</p>
+                            <p class="small text-muted mt-2 mb-0" th:if="${authentication.principal.email != null and !authentication.principal.email.isEmpty()}">Уведомления будут приходить в Telegram и на email</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning mb-4" sec:authorize="!isAuthenticated()">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Хотите получать уведомления?
+                        </h6>
+                        <p class="mb-2">
+                            <a href="/register" class="btn btn-sm btn-primary">Зарегистрируйтесь</a> 
+                            чтобы получать уведомления о новых объявлениях в категории 
+                            <strong th:text="${categoryEntity != null ? categoryEntity.displayName : advertisement.category.getDisplayName()}">Категория</strong>.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -143,9 +206,20 @@
                                     th:data-user-id="${user.id}"
                                     th:data-action="message"
                                     sec:authorize="isAuthenticated()"
-                                    th:if="${#authentication.principal.id != user.id}">
+                                    th:if="${authentication != null and authentication.principal != null and authentication.principal.id != user.id}">
                                 <i class="fas fa-envelope me-1"></i>Написать сообщение
                             </button>
+                            <a th:href="@{/messages/conversation/{userId}(userId=${user.id})}" 
+                               class="btn btn-outline-primary btn-sm w-100 mt-2"
+                               sec:authorize="isAuthenticated()"
+                               th:if="${authentication != null and authentication.principal != null and authentication.principal.id != user.id}">
+                                <i class="fas fa-comments me-1"></i>Написать в личку
+                            </a>
+                            <div th:if="${advertisement.showPhone and authentication != null and authentication.principal != null}" 
+                                 class="mt-2 p-2 bg-light rounded">
+                                <small class="text-muted d-block">Телефон:</small>
+                                <strong th:text="${user.phone}">+358...</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -314,6 +388,97 @@
             }
         }
         
+        // Избранное
+        function toggleFavorite(btn) {
+            const adId = btn.getAttribute('data-ad-id');
+            if (!adId) return;
+            
+            fetch('/api/favorites/toggle/' + adId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = btn.querySelector('i');
+                    const text = btn.querySelector('.favorite-text');
+                    if (data.isFavorite) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        text.textContent = 'В избранном';
+                        btn.classList.remove('btn-outline-danger');
+                        btn.classList.add('btn-danger');
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        text.textContent = 'Добавить в избранное';
+                        btn.classList.remove('btn-danger');
+                        btn.classList.add('btn-outline-danger');
+                    }
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Не удалось обновить избранное'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка при обновлении избранного');
+            });
+        }
+        
+        // Подписка на категорию
+        function subscribeToCategory(btn) {
+            const categoryId = btn.getAttribute('data-category-id');
+            if (!categoryId) return;
+            
+            fetch('/api/subscriptions/subscribe/' + categoryId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    btn.innerHTML = '<i class="fas fa-check me-1"></i>Подписка активна';
+                    btn.disabled = true;
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-success');
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Не удалось подписаться'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка при подписке на категорию');
+            });
+        }
+        
+        // Проверка избранного при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteBtn = document.getElementById('favoriteBtn');
+            if (favoriteBtn) {
+                const adId = favoriteBtn.getAttribute('data-ad-id');
+                fetch('/api/favorites/check/' + adId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.isFavorite) {
+                            const icon = favoriteBtn.querySelector('i');
+                            const text = favoriteBtn.querySelector('.favorite-text');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            text.textContent = 'В избранном';
+                            favoriteBtn.classList.remove('btn-outline-danger');
+                            favoriteBtn.classList.add('btn-danger');
+                        }
+                    })
+                    .catch(error => console.error('Error checking favorite:', error));
+            }
+        });
+        
         // Открыть форму жалобы
         function openReport() {
             if (currentUserId) {
@@ -325,26 +490,38 @@
         // Отправка жалобы
         document.getElementById('reportForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
+            
+            const reason = document.getElementById('reportReason').value;
+            const description = document.getElementById('reportDescription').value;
+            
+            if (!reason) {
+                alert('Выберите причину жалобы');
+                return;
+            }
+            
+            const formData = new URLSearchParams();
             formData.append('userId', currentUserId);
+            formData.append('reason', reason);
+            formData.append('description', description);
             
             const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
             const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
             
             fetch('/api/user-menu/report', {
                 method: 'POST',
-                body: formData,
                 headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
                     [csrfHeader]: csrfToken
-                }
+                },
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Жалоба отправлена');
+                    alert('Жалоба отправлена администраторам');
                     const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
                     modal.hide();
-                    this.reset();
+                    document.getElementById('reportForm').reset();
                 } else {
                     alert('Ошибка: ' + (data.error || 'Не удалось отправить жалобу'));
                 }

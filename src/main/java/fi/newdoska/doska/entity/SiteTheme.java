@@ -17,22 +17,22 @@ public class SiteTheme {
     private Long id = 1L;
     
     @Column(nullable = false)
-    private String primaryColor = "#0d6efd";
+    private String primaryColor = "#0E7C66";
     
     @Column(nullable = false)
-    private String secondaryColor = "#6c757d";
+    private String secondaryColor = "#6B7C75";
     
     @Column(nullable = false)
-    private String successColor = "#198754";
+    private String successColor = "#2E9E6B";
     
     @Column(nullable = false)
-    private String dangerColor = "#dc3545";
+    private String dangerColor = "#E0573F";
     
     @Column(nullable = false)
-    private String warningColor = "#ffc107";
+    private String warningColor = "#E0A23B";
     
     @Column(nullable = false)
-    private String infoColor = "#0dcaf0";
+    private String infoColor = "#2A9D8F";
     
     // Размеры текста
     @Column(nullable = false)
@@ -49,22 +49,22 @@ public class SiteTheme {
     
     // Дополнительные настройки
     @Column(nullable = false)
-    private String borderRadius = "0.375rem";
+    private String borderRadius = "0.85rem";
     
     @Column(nullable = false)
-    private String boxShadow = "0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)";
+    private String boxShadow = "0 0.125rem 0.5rem rgba(31, 61, 53, 0.08)";
     
     @Column(nullable = false)
-    private String navbarHeight = "56px";
+    private String navbarHeight = "68px";
     
     @Column(nullable = false)
-    private String containerMaxWidth = "1320px";
+    private String containerMaxWidth = "1200px";
     
     // Hero section gradient colors
     @Column(nullable = false)
-    private String heroGradientStart = "#667eea";
+    private String heroGradientStart = "#0E7C66";
     
     @Column(nullable = false)
-    private String heroGradientEnd = "#764ba2";
+    private String heroGradientEnd = "#2E9E6B";
 }
 
