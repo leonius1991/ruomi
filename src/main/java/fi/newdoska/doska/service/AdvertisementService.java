@@ -400,6 +400,66 @@ public class AdvertisementService {
     public Advertisement saveAdvertisement(Advertisement advertisement) {
         return advertisementRepository.save(advertisement);
     }
+
+    public Page<Advertisement> getAdvertisementsForAdmin(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        if (search != null && !search.isBlank()) {
+            return advertisementRepository.adminSearch(search.trim(), pageable);
+        }
+        return advertisementRepository.findAllForAdmin(pageable);
+    }
+
+    public Advertisement adminUpdateAdvertisement(Long id, AdvertisementDto dto) {
+        Advertisement ad = advertisementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+
+        ad.setTitle(dto.getTitle());
+        ad.setDescription(dto.getDescription());
+        ad.setCategory(Advertisement.Category.valueOf(dto.getCategory()));
+        if (dto.getSubcategoryId() != null) {
+            ad.setSubcategory(subcategoryRepository.findById(dto.getSubcategoryId()).orElse(null));
+        } else {
+            ad.setSubcategory(null);
+        }
+        ad.setType(Advertisement.AdvertisementType.valueOf(dto.getType()));
+        ad.setPrice(dto.getPrice());
+        ad.setLocation(dto.getLocation());
+        ad.setCity(dto.getCity());
+        ad.setPremium(dto.isPremium());
+        ad.setUrgent(dto.isUrgent());
+        ad.setShowPhone(dto.getShowPhone() != null ? dto.getShowPhone() : false);
+
+        if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
+            ad.setStatus(Advertisement.Status.valueOf(dto.getStatus()));
+        }
+        if (dto.getUserId() != null) {
+            User owner = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+            ad.setUser(owner);
+        }
+        ad.setUpdatedAt(LocalDateTime.now());
+        return advertisementRepository.save(ad);
+    }
+
+    public void adminDeleteAdvertisement(Long id) {
+        Advertisement ad = advertisementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
+        ad.setStatus(Advertisement.Status.DELETED);
+        advertisementRepository.save(ad);
+    }
+
+    public int adminBulkDeleteAdvertisements(List<Long> ids) {
+        int count = 0;
+        for (Long id : ids) {
+            try {
+                adminDeleteAdvertisement(id);
+                count++;
+            } catch (Exception e) {
+                log.warn("Failed to delete ad {}: {}", id, e.getMessage());
+            }
+        }
+        return count;
+    }
     
     private boolean hasModeratorPrivileges(User user) {
         return user.getRole().equals(User.UserRole.MODERATOR)

@@ -69,4 +69,14 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
     @Modifying
     @Query("UPDATE Advertisement a SET a.subcategory = null WHERE a.subcategory.id IN :ids")
     void clearSubcategoryReferences(@Param("ids") List<Long> ids);
+
+    @Query("SELECT a FROM Advertisement a WHERE a.status <> 'DELETED' ORDER BY a.createdAt DESC")
+    Page<Advertisement> findAllForAdmin(Pageable pageable);
+
+    @Query("SELECT a FROM Advertisement a WHERE a.status <> 'DELETED' AND (" +
+           "LOWER(a.title) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(a.description) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(a.city) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(a.user.username) LIKE LOWER(CONCAT('%', :q, '%'))) ORDER BY a.createdAt DESC")
+    Page<Advertisement> adminSearch(@Param("q") String q, Pageable pageable);
 } 

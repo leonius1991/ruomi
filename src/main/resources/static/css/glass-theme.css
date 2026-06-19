@@ -427,12 +427,16 @@ html[data-theme="light"] .form-select {
 }
 
 /* ---------- Old footer gradient override ---------- */
-footer {
+footer:not(.ruomi-site-footer) {
     background: linear-gradient(180deg, transparent 0%, rgba(76, 29, 149, 0.15) 100%) !important;
 }
 
-html[data-theme="light"] footer {
+html[data-theme="light"] footer:not(.ruomi-site-footer) {
     background: linear-gradient(180deg, transparent 0%, rgba(124, 58, 237, 0.08) 100%) !important;
+}
+
+.ruomi-site-footer {
+    background: transparent !important;
 }
 
 @media (max-width: 575.98px) {

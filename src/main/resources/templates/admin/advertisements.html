@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="~{fragments/admin-layout :: admin-layout('Объявления — ruomi.fi', ~{::content})}">
+    <th:block th:fragment="content">
+        <div class="admin-card">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                <h2 class="mb-0"><i class="fas fa-bullhorn me-2"></i>Объявления</h2>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <form method="get" action="/admin/advertisements" class="row g-2 mb-3">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" th:value="${search}"
+                           placeholder="Поиск по заголовку, городу, автору...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> Найти</button>
+                </div>
+            </form>
+
+            <form th:action="@{/admin/advertisements/bulk-delete}" method="post" id="bulkForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button type="submit" class="btn btn-sm btn-danger" id="bulkDeleteBtn" disabled
+                            onclick="return confirm('Удалить выбранные объявления?')">
+                        <i class="fas fa-trash me-1"></i>Удалить выбранные
+                    </button>
+                    <span class="text-muted small align-self-center" id="selectedCount"></span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th style="width:36px"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                            <th>ID</th>
+                            <th>Заголовок</th>
+                            <th>Категория</th>
+                            <th>Город/район</th>
+                            <th>Автор</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ad : ${advertisements.content}">
+                            <td><input type="checkbox" name="ids" th:value="${ad.id}" class="form-check-input ad-check"></td>
+                            <td th:text="${ad.id}">1</td>
+                            <td>
+                                <a th:href="@{/advertisement/{id}(id=${ad.id})}" th:text="${ad.title}" target="_blank">Title</a>
+                            </td>
+                            <td th:text="${ad.category.displayName}">Cat</td>
+                            <td th:text="${ad.city}">City</td>
+                            <td th:text="${ad.user.username}">user</td>
+                            <td><span class="badge bg-secondary" th:text="${ad.status}">OK</span></td>
+                            <td th:text="${#temporals.format(ad.createdAt, 'dd.MM.yyyy')}">01.01</td>
+                            <td class="text-nowrap">
+                                <a th:href="@{/admin/advertisements/{id}/edit(id=${ad.id})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form th:action="@{/admin/advertisements/{id}/delete(id=${ad.id})}" method="post" class="d-inline"
+                                      onsubmit="return confirm('Удалить объявление?')">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${advertisements.empty}">
+                            <td colspan="9" class="text-center text-muted py-4">Объявления не найдены</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+
+            <nav th:if="${advertisements.totalPages > 1}" class="mt-3">
+                <ul class="pagination pagination-sm">
+                    <li class="page-item" th:classappend="${advertisements.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/advertisements(page=${currentPage - 1}, search=${search})}">«</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, advertisements.totalPages - 1)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/advertisements(page=${i}, search=${search})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${advertisements.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/advertisements(page=${currentPage + 1}, search=${search})}">»</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <script>
+            (function() {
+                const selectAll = document.getElementById('selectAll');
+                const checks = () => document.querySelectorAll('.ad-check');
+                const bulkBtn = document.getElementById('bulkDeleteBtn');
+                const countEl = document.getElementById('selectedCount');
+                function updateBulk() {
+                    const n = [...checks()].filter(c => c.checked).length;
+                    bulkBtn.disabled = n === 0;
+                    countEl.textContent = n ? 'Выбрано: ' + n : '';
+                }
+                selectAll?.addEventListener('change', () => {
+                    checks().forEach(c => { c.checked = selectAll.checked; });
+                    updateBulk();
+                });
+                document.addEventListener('change', e => {
+                    if (e.target.classList.contains('ad-check')) updateBulk();
+                });
+            })();
+        </script>
+    </th:block>
+</div>
+</body>
+</html>

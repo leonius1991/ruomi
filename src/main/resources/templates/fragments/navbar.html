@@ -38,20 +38,32 @@
                 </ul>
             </div>
 
-            <!-- City Selector -->
+            <!-- City / Region Selector -->
             <div class="dropdown me-2 d-none d-md-block">
                 <button class="city-pill dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-map-marker-alt me-1" style="color:#EF6A52;"></i><span>Вся Финляндия</span>
+                    <i class="fas fa-map-marker-alt me-1" style="color:var(--warm-coral);"></i><span id="navbarCityLabel">Вся Финляндия</span>
                 </button>
-                <ul class="dropdown-menu" style="border-radius:14px; box-shadow:0 10px 30px rgba(31,61,53,0.15);">
-                    <li><a class="dropdown-item" href="/advertisements">Вся Финляндия</a></li>
+                <ul class="dropdown-menu ruomi-location-menu" style="border-radius:14px; box-shadow:0 10px 30px rgba(76,29,149,0.18); min-width:220px;">
+                    <li><a class="dropdown-item fw-semibold" href="/advertisements">Вся Финляндия</a></li>
                     <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Крупные города</h6></li>
                     <li><a class="dropdown-item" href="/advertisements?city=Хельсинки">Хельсинки</a></li>
                     <li><a class="dropdown-item" href="/advertisements?city=Эспоо">Эспоо</a></li>
                     <li><a class="dropdown-item" href="/advertisements?city=Вантаа">Вантаа</a></li>
                     <li><a class="dropdown-item" href="/advertisements?city=Турку">Турку</a></li>
                     <li><a class="dropdown-item" href="/advertisements?city=Тампере">Тампере</a></li>
                     <li><a class="dropdown-item" href="/advertisements?city=Оулу">Оулу</a></li>
+                    <li><a class="dropdown-item" href="/advertisements?city=Лахти">Лахти</a></li>
+                    <li><a class="dropdown-item" href="/advertisements?city=Куопио">Куопио</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><h6 class="dropdown-header">Области</h6></li>
+                    <li><a class="dropdown-item" href="/advertisements?city=Уусимаа">Уусимаа</a></li>
+                    <li><a class="dropdown-item" href="/advertisements?city=Южная Карелия">Южная Карелия</a></li>
+                    <li><a class="dropdown-item" href="/advertisements?city=Pirkanmaa">Pirkanmaa</a></li>
+                    <li><a class="dropdown-item" href="/advertisements?city=Северная Остроботния">Северная Остроботния</a></li>
+                    <li><a class="dropdown-item" href="/advertisements?city=Лапландия">Лапландия</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-primary" href="#" data-location-pick><i class="fas fa-search me-2"></i>Другое…</a></li>
                 </ul>
             </div>
             
