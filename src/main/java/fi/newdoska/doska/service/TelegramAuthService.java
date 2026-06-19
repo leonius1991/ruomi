@@ -7,233 +7,301 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TelegramAuthService {
-    
+
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-    
-    @Value("${telegram.bot.token}")
+
+    @Value("${telegram.bot.token:}")
     private String botToken;
-    
+
+    public Map<String, String> normalizeTelegramData(Map<String, Object> raw) {
+        Map<String, String> normalized = new HashMap<>();
+        if (raw == null) {
+            return normalized;
+        }
+        raw.forEach((key, value) -> {
+            if (value != null) {
+                normalized.put(key, String.valueOf(value));
+            }
+        });
+        return normalized;
+    }
+
+    public Map<String, Object> verifyTelegramLogin(Map<String, Object> rawData) {
+        return verifyTelegramLoginNormalized(normalizeTelegramData(rawData));
+    }
+
     /**
      * Verify Telegram login data and return user information
      */
-    public Map<String, Object> verifyTelegramLogin(Map<String, String> telegramData) {
+    private Map<String, Object> verifyTelegramLoginNormalized(Map<String, String> telegramData) {
         try {
-            // Verify the data using Telegram's API
             if (!verifyTelegramData(telegramData)) {
-                return Map.of("success", false, "error", "Invalid Telegram data");
+                return Map.of("success", false, "error", "Недействительные данные Telegram");
             }
-            
+
             Long telegramId = Long.parseLong(telegramData.get("id"));
             String firstName = telegramData.get("first_name");
             String lastName = telegramData.get("last_name");
             String username = telegramData.get("username");
             String photoUrl = telegramData.get("photo_url");
-            
-            // Check if user already exists with this Telegram ID
+
             User existingUser = userService.findByTelegramId(telegramId);
             if (existingUser != null) {
-                // Обновляем аватарку, если есть
                 if (photoUrl != null && !photoUrl.isEmpty()) {
                     existingUser.setAvatarUrl(photoUrl);
                     userService.saveUser(existingUser);
                 }
                 return buildSuccessResult(existingUser, "login");
             }
-            
+
             if (username != null && !username.isEmpty()) {
                 Optional<User> userByUsername = userRepository.findByUsername(username);
                 if (userByUsername.isPresent()) {
                     User linkedUser = userByUsername.get();
-                    linkedUser.setTelegramId(telegramId);
-                    // Обновляем аватарку, если есть
-                    if (photoUrl != null && !photoUrl.isEmpty()) {
-                        linkedUser.setAvatarUrl(photoUrl);
+                    if (linkedUser.getTelegramId() == null) {
+                        linkedUser.setTelegramId(telegramId);
+                        if (photoUrl != null && !photoUrl.isEmpty()) {
+                            linkedUser.setAvatarUrl(photoUrl);
+                        }
+                        userRepository.save(linkedUser);
+                        return buildSuccessResult(linkedUser, "link");
                     }
-                    userRepository.save(linkedUser);
-                    return buildSuccessResult(linkedUser, "link");
                 }
             }
-            
-            UserWithPassword userWithPassword = createUserFromTelegramData(telegramId, firstName, lastName, username, photoUrl);
+
+            UserWithPassword userWithPassword = createUserFromTelegramData(
+                    telegramId, firstName, lastName, username, photoUrl);
             User savedUser = userService.saveUser(userWithPassword.user);
-            
-            // Отправляем пароль на email, если есть реальный email (не placeholder)
+
             try {
                 emailService.sendTelegramPasswordEmail(savedUser, userWithPassword.temporaryPassword);
             } catch (Exception e) {
                 log.error("Failed to send password email", e);
             }
-            
-            // Возвращаем временный пароль для показа пользователю (только один раз)
+
             Map<String, Object> result = buildSuccessResult(savedUser, "register");
             result.put("requiresPasswordSetup", true);
             result.put("temporaryPassword", userWithPassword.temporaryPassword);
-            
             return result;
-            
+
         } catch (Exception e) {
             log.error("Error during Telegram authentication", e);
-            return Map.of("success", false, "error", "Authentication failed: " + e.getMessage());
+            return Map.of("success", false, "error", "Ошибка авторизации: " + e.getMessage());
         }
     }
-    
-    /**
-     * Link Telegram account to existing user
-     */
-    public boolean linkTelegramToUser(Long userId, Long telegramId, String telegramUsername) {
-        try {
-            User user = userRepository.findById(userId).orElse(null);
-            if (user == null) {
-                return false;
-            }
-            
-            // Check if this Telegram ID is already linked to another account
-            User existingUserWithTelegram = userService.findByTelegramId(telegramId);
-            if (existingUserWithTelegram != null && !existingUserWithTelegram.getId().equals(userId)) {
-                return false;
-            }
-            
-            user.setTelegramId(telegramId);
-            userService.saveUser(user);
-            
-            log.info("Linked Telegram account {} to user {}", telegramId, userId);
-            return true;
-            
-        } catch (Exception e) {
-            log.error("Error linking Telegram account", e);
-            return false;
+
+    @Transactional
+    public Map<String, Object> linkVerifiedTelegramToUser(Long userId, Map<String, String> telegramData) {
+        if (!verifyTelegramData(telegramData)) {
+            return Map.of("success", false, "error", "Недействительные данные Telegram");
         }
-    }
-    
-    /**
-     * Link Telegram account with photo URL
-     */
-    public boolean linkTelegramToUserWithPhoto(Long userId, Long telegramId, String telegramUsername, String photoUrl) {
-        try {
-            User user = userRepository.findById(userId).orElse(null);
-            if (user == null) {
-                return false;
+
+        Long telegramId = Long.parseLong(telegramData.get("id"));
+        String telegramUsername = telegramData.get("username");
+        String photoUrl = telegramData.get("photo_url");
+
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return Map.of("success", false, "error", "Пользователь не найден");
+        }
+
+        User existingUserWithTelegram = userService.findByTelegramId(telegramId);
+        if (existingUserWithTelegram != null && !existingUserWithTelegram.getId().equals(userId)) {
+            if (isTelegramStubUser(existingUserWithTelegram)) {
+                mergeStubIntoUser(existingUserWithTelegram, user, telegramId, photoUrl);
+                log.info("Merged Telegram stub account {} into user {}", telegramId, userId);
+            } else {
+                return Map.of("success", false,
+                        "error", "Этот Telegram уже привязан к другому аккаунту");
             }
-            
-            // Check if this Telegram ID is already linked to another account
-            User existingUserWithTelegram = userService.findByTelegramId(telegramId);
-            if (existingUserWithTelegram != null && !existingUserWithTelegram.getId().equals(userId)) {
-                return false;
-            }
-            
+        } else {
             user.setTelegramId(telegramId);
-            // Обновляем аватарку, если есть
             if (photoUrl != null && !photoUrl.isEmpty()) {
                 user.setAvatarUrl(photoUrl);
             }
             userService.saveUser(user);
-            
-            log.info("Linked Telegram account {} to user {} with photo", telegramId, userId);
-            return true;
-            
-        } catch (Exception e) {
-            log.error("Error linking Telegram account", e);
+        }
+
+        log.info("Linked Telegram {} (@{}) to user {}", telegramId, telegramUsername, userId);
+        return Map.of(
+                "success", true,
+                "message", "Telegram успешно привязан",
+                "username", telegramUsername != null ? telegramUsername : ""
+        );
+    }
+
+    public boolean linkTelegramToUser(Long userId, Long telegramId, String telegramUsername) {
+        Map<String, String> data = new HashMap<>();
+        data.put("id", String.valueOf(telegramId));
+        data.put("first_name", telegramUsername != null ? telegramUsername : "User");
+        data.put("auth_date", String.valueOf(Instant.now().getEpochSecond()));
+        data.put("hash", "legacy");
+        if (botToken != null && !botToken.isBlank() && !"YOUR_BOT_TOKEN_HERE".equals(botToken)) {
             return false;
         }
+        return Boolean.TRUE.equals(linkVerifiedTelegramToUser(userId, data).get("success"));
     }
-    
-    /**
-     * Unlink Telegram account from user
-     */
+
+    public boolean linkTelegramToUserWithPhoto(Long userId, Long telegramId, String telegramUsername, String photoUrl) {
+        return linkTelegramToUser(userId, telegramId, telegramUsername);
+    }
+
+    @Transactional
     public boolean unlinkTelegramFromUser(Long userId) {
         try {
             User user = userRepository.findById(userId).orElse(null);
             if (user == null) {
                 return false;
             }
-            
             user.setTelegramId(null);
             userService.saveUser(user);
-            
             log.info("Unlinked Telegram account from user {}", userId);
             return true;
-            
         } catch (Exception e) {
             log.error("Error unlinking Telegram account", e);
             return false;
         }
     }
-    
-    /**
-     * Verify Telegram data using Telegram's API
-     */
+
+    private void mergeStubIntoUser(User stub, User target, Long telegramId, String photoUrl) {
+        target.setTelegramId(telegramId);
+        if ((target.getAvatarUrl() == null || target.getAvatarUrl().isBlank())
+                && photoUrl != null && !photoUrl.isEmpty()) {
+            target.setAvatarUrl(photoUrl);
+        } else if ((target.getAvatarUrl() == null || target.getAvatarUrl().isBlank())
+                && stub.getAvatarUrl() != null) {
+            target.setAvatarUrl(stub.getAvatarUrl());
+        }
+        userService.saveUser(target);
+        stub.setTelegramId(null);
+        userRepository.save(stub);
+    }
+
+    private boolean isTelegramStubUser(User user) {
+        if (user == null) {
+            return false;
+        }
+        boolean stubEmail = user.getEmail() != null && user.getEmail().startsWith("telegram_")
+                && user.getEmail().endsWith("@ruomi.fi");
+        boolean stubUsername = user.getUsername() != null && user.getUsername().startsWith("tg_");
+        return stubEmail || stubUsername;
+    }
+
     private boolean verifyTelegramData(Map<String, String> telegramData) {
         try {
-            // For Telegram Login Widget, we need to verify the data hash
-            // This is a simplified verification - in production, you should implement proper hash verification
-            
             String id = telegramData.get("id");
             String firstName = telegramData.get("first_name");
             String authDate = telegramData.get("auth_date");
             String hash = telegramData.get("hash");
-            
+
             if (id == null || firstName == null || authDate == null || hash == null) {
                 return false;
             }
-            
-            // In a real implementation, you would verify the hash here
-            // For now, we'll do basic validation
-            return true;
-            
+
+            long authTimestamp = Long.parseLong(authDate);
+            if (Instant.now().getEpochSecond() - authTimestamp > 86400) {
+                log.warn("Telegram auth_date expired");
+                return false;
+            }
+
+            if (botToken == null || botToken.isBlank() || "YOUR_BOT_TOKEN_HERE".equals(botToken)) {
+                log.warn("Telegram bot token not configured — hash check skipped");
+                return true;
+            }
+
+            TreeMap<String, String> sorted = new TreeMap<>();
+            telegramData.forEach((key, value) -> {
+                if (!"hash".equals(key) && value != null) {
+                    sorted.put(key, value);
+                }
+            });
+
+            StringBuilder dataCheck = new StringBuilder();
+            sorted.forEach((key, value) -> {
+                if (dataCheck.length() > 0) {
+                    dataCheck.append('\n');
+                }
+                dataCheck.append(key).append('=').append(value);
+            });
+
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] secretKey = digest.digest(botToken.getBytes(StandardCharsets.UTF_8));
+
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(secretKey, "HmacSHA256"));
+            byte[] calculated = mac.doFinal(dataCheck.toString().getBytes(StandardCharsets.UTF_8));
+
+            return bytesToHex(calculated).equalsIgnoreCase(hash);
         } catch (Exception e) {
             log.error("Error verifying Telegram data", e);
             return false;
         }
     }
-    
-    /**
-     * Create a new user from Telegram data
-     * Returns both user and temporary password
-     */
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
     private UserWithPassword createUserFromTelegramData(Long telegramId, String firstName, String lastName,
-                                          String username, String photoUrl) {
+                                                        String username, String photoUrl) {
         User user = new User();
-        
-        // Generate a unique username if not provided
-        String finalUsername = username != null && !username.isEmpty() ? username : 
-                              "tg_" + telegramId;
-        
-        // Generate a readable password (8 символов: буквы и цифры)
+        String finalUsername = resolveUniqueUsername(username, telegramId);
         String randomPassword = generateReadablePassword();
-        
+
         user.setUsername(finalUsername);
-        user.setEmail("telegram_" + telegramId + "@ruomi.fi"); // Placeholder email
+        user.setEmail("telegram_" + telegramId + "@ruomi.fi");
         user.setPassword(passwordEncoder.encode(randomPassword));
         user.setFirstName(firstName != null ? firstName : "Telegram");
         user.setLastName(lastName != null ? lastName : "User");
         user.setTelegramId(telegramId);
-        // Сохраняем аватарку из Telegram, если есть
         if (photoUrl != null && !photoUrl.isEmpty()) {
             user.setAvatarUrl(photoUrl);
         }
         user.setRole(User.UserRole.USER);
-        user.setEnabled(true); // Telegram пользователи сразу активны
+        user.setEnabled(true);
         user.setCreatedAt(LocalDateTime.now());
-        
+
         return new UserWithPassword(user, randomPassword);
     }
-    
-    /**
-     * Генерирует читаемый пароль (8 символов: буквы и цифры, без похожих символов)
-     */
+
+    private String resolveUniqueUsername(String username, Long telegramId) {
+        String base = (username != null && !username.isEmpty()) ? username : "tg_" + telegramId;
+        if (userRepository.findByUsername(base).isEmpty()) {
+            return base;
+        }
+        for (int i = 1; i <= 100; i++) {
+            String candidate = base + "_" + i;
+            if (userRepository.findByUsername(candidate).isEmpty()) {
+                return candidate;
+            }
+        }
+        return "tg_" + telegramId + "_" + System.currentTimeMillis();
+    }
+
     private String generateReadablePassword() {
         String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
         StringBuilder password = new StringBuilder();
@@ -243,7 +311,7 @@ public class TelegramAuthService {
         }
         return password.toString();
     }
-    
+
     private Map<String, Object> buildSuccessResult(User user, String action) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("success", true);
@@ -251,14 +319,11 @@ public class TelegramAuthService {
         payload.put("user", user);
         return payload;
     }
-    
-    /**
-     * Вспомогательный класс для возврата пользователя и временного пароля
-     */
+
     private static class UserWithPassword {
         final User user;
         final String temporaryPassword;
-        
+
         UserWithPassword(User user, String temporaryPassword) {
             this.user = user;
             this.temporaryPassword = temporaryPassword;

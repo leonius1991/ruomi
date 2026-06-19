@@ -224,7 +224,7 @@
                                         
                                         <!-- Link/Unlink Buttons -->
                                         <div id="telegram-actions">
-                                            <button type="button" class="btn btn-primary" id="link-telegram-btn" th:style="${user.telegramId != null ? 'display: none;' : ''}" onclick="showTelegramWidget()">
+                                            <button type="button" class="btn btn-primary" id="link-telegram-btn" th:style="${user.telegramId != null ? 'display: none;' : ''}">
                                                 <i class="fab fa-telegram me-2"></i>Связать с Telegram
                                             </button>
                                             <button type="button" class="btn btn-outline-danger" id="unlink-telegram-btn" th:style="${user.telegramId == null ? 'display: none;' : ''}">
@@ -232,7 +232,7 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="col-md-4" th:if="${user.telegramId == null}">
+                                    <div class="col-md-4" id="telegram-widget-col" th:if="${user.telegramId == null}">
                                         <div class="text-center" id="telegram-widget-container">
                                             <div id="telegram-login-widget-small"></div>
                                         </div>
@@ -288,225 +288,149 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Telegram Login Widget Script (only show if not linked) -->
-    <script th:if="${user.telegramId == null}" async src="https://telegram.org/js/telegram-widget.js?22" 
-            th:attr="data-telegram-login=${@environment.getProperty('telegram.login.widget.bot.username','ruomi_fi_bot')},
-                     data-auth-url=${@environment.getProperty('telegram.login.widget.auth-url','https://ruomi.fi/auth/telegram/callback')}"
-            data-size="medium" 
-            data-request-access="write"
-            data-onauth="onTelegramAuth(user)"></script>
-    
-    <script>
-        // Handle Telegram login for linking
+    <script th:src="@{/js/ruomi-modal.js}"></script>
+
+    <script th:inline="javascript">
+        const BOT_USERNAME = /*[[${@environment.getProperty('telegram.login.widget.bot.username','ruomi_fi_bot')}]]*/ 'ruomi_fi_bot';
+        const CSRF_TOKEN = document.querySelector('meta[name="_csrf"]')?.content || '';
+        const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
         function onTelegramAuth(user) {
-            console.log('Telegram auth for linking:', user);
-            
-            // Link the Telegram account
             linkTelegramAccount(user);
         }
-        
+
         function linkTelegramAccount(telegramData) {
-            // Получаем CSRF токен
-            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || 
-                             document.querySelector('input[name="_csrf"]')?.value || '';
-            
             fetch('/profile/link-telegram', {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
+                    [CSRF_HEADER]: CSRF_TOKEN
                 },
-                body: `telegramId=${telegramData.id}&telegramUsername=${telegramData.username || ''}&_csrf=${csrfToken}`
+                body: JSON.stringify(telegramData)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    updateTelegramStatus(true, telegramData.username);
-                    alert('Telegram аккаунт успешно связан!');
-                } else {
-                    alert('Ошибка: ' + data.error);
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Не удалось привязать Telegram');
                 }
+                return data;
+            })
+            .then(data => {
+                updateTelegramStatus(true, data.username || telegramData.username);
+                RuomiModal.alert('Готово', 'Telegram успешно привязан к вашему аккаунту');
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Произошла ошибка при связывании аккаунта');
+                RuomiModal.alert('Ошибка', error.message);
             });
         }
-        
+
         function unlinkTelegramAccount() {
-            if (confirm('Вы уверены, что хотите отвязать Telegram аккаунт?')) {
-                // Получаем CSRF токен
-                const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || 
-                                 document.querySelector('input[name="_csrf"]')?.value || '';
-                
+            RuomiModal.confirm('Отвязать Telegram', 'Вы уверены, что хотите отвязать Telegram?', () => {
                 fetch('/profile/unlink-telegram', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
+                        [CSRF_HEADER]: CSRF_TOKEN
                     }
                 })
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
                     if (data.success) {
                         updateTelegramStatus(false);
-                        alert('Telegram аккаунт успешно отвязан!');
+                        RuomiModal.alert('Готово', 'Telegram отвязан');
                     } else {
-                        alert('Ошибка: ' + data.error);
+                        RuomiModal.alert('Ошибка', data.error || 'Не удалось отвязать');
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Произошла ошибка при отвязывании аккаунта');
-                });
-            }
+                .catch(() => RuomiModal.alert('Ошибка', 'Не удалось отвязать Telegram'));
+            });
         }
-        
+
         function updateTelegramStatus(isLinked, username = null) {
+            const statusEl = document.querySelector('#telegram-status .alert');
             const statusText = document.getElementById('telegram-status-text');
             const linkBtn = document.getElementById('link-telegram-btn');
             const unlinkBtn = document.getElementById('unlink-telegram-btn');
-            
+            const widgetCol = document.getElementById('telegram-widget-col');
+
             if (isLinked) {
-                statusText.textContent = `Связан с @${username}`;
-                statusText.className = 'text-success';
+                statusEl?.classList.remove('alert-info');
+                statusEl?.classList.add('alert-success');
+                statusText.textContent = username ? 'Связан с @' + username : 'Связан';
                 linkBtn.style.display = 'none';
                 unlinkBtn.style.display = 'inline-block';
+                if (widgetCol) widgetCol.style.display = 'none';
             } else {
+                statusEl?.classList.remove('alert-success');
+                statusEl?.classList.add('alert-info');
                 statusText.textContent = 'Не связан';
-                statusText.className = 'text-muted';
                 linkBtn.style.display = 'inline-block';
                 unlinkBtn.style.display = 'none';
+                if (widgetCol) widgetCol.style.display = '';
             }
         }
-        
-        // Event listeners
-        const linkBtn = document.getElementById('link-telegram-btn');
-        const unlinkBtn = document.getElementById('unlink-telegram-btn');
-        
-        function showTelegramWidget() {
-            // Сначала открываем вкладку Telegram, если она не открыта
-            const telegramTabLink = document.querySelector('a[href="#telegram"][data-bs-toggle]');
-            const telegramPane = document.querySelector('#telegram');
-            
-            if (telegramTabLink && telegramPane) {
-                // Проверяем, активна ли уже вкладка
-                const isActive = telegramPane.classList.contains('active') && telegramPane.classList.contains('show');
-                
-                if (!isActive) {
-                    // Используем Bootstrap для переключения вкладки
-                    const tab = new bootstrap.Tab(telegramTabLink);
-                    tab.show();
-                    
-                    // Ждем, пока вкладка откроется
-                    telegramPane.addEventListener('shown.bs.tab', function onShown() {
-                        telegramPane.removeEventListener('shown.bs.tab', onShown);
-                        setTimeout(loadTelegramWidget, 100); // Небольшая задержка для рендеринга
-                    }, { once: true });
-                } else {
-                    // Если вкладка уже активна, загружаем сразу
-                    setTimeout(loadTelegramWidget, 100);
-                }
-            } else {
-                // Если вкладок нет, просто пытаемся найти контейнер
-                loadTelegramWidget();
-            }
-        }
-        
-        function loadTelegramWidget() {
-            // Проверяем, загружен ли виджет
-            const widgetContainer = document.getElementById('telegram-widget-container');
-            if (!widgetContainer) {
-                console.error('Telegram widget container not found');
-                // Создаем контейнер, если его нет
-                const telegramActions = document.getElementById('telegram-actions');
-                if (telegramActions && telegramActions.parentElement) {
-                    const container = document.createElement('div');
-                    container.id = 'telegram-widget-container';
-                    container.className = 'text-center mt-3 col-md-4';
-                    // Вставляем после telegram-actions
-                    const parent = telegramActions.parentElement;
-                    if (parent.querySelector('.row')) {
-                        const row = parent.querySelector('.row');
-                        const col = row.querySelector('.col-md-4:last-child');
-                        if (col) {
-                            col.appendChild(container);
-                        } else {
-                            const newCol = document.createElement('div');
-                            newCol.className = 'col-md-4';
-                            newCol.appendChild(container);
-                            row.appendChild(newCol);
-                        }
-                    } else {
-                        parent.appendChild(container);
-                    }
-                    loadWidgetIntoContainer(container);
-                } else {
-                    alert('Ошибка: не удалось найти контейнер для Telegram виджета. Пожалуйста, перейдите на вкладку "Telegram" в настройках профиля.');
-                }
-                return;
-            }
-            
-            loadWidgetIntoContainer(widgetContainer);
-        }
-        
-        function loadWidgetIntoContainer(container) {
-            // Прокручиваем к контейнеру
-            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Если виджет уже загружен, просто показываем его
-            if (container.querySelector('script[src*="telegram-widget"]')) {
-                return;
-            }
-            
-            // Загружаем виджет динамически, если его еще нет
-            if (!document.getElementById('telegram-widget-script')) {
+
+        function showTelegramLinkModal() {
+            const modal = RuomiModal.show({
+                title: 'Привязка Telegram',
+                body: '<p class="text-muted small mb-3">Нажмите кнопку Telegram ниже — аккаунт будет автоматически привязан к профилю.</p><div id="telegram-modal-widget" class="profile-telegram-widget-wrap"></div>',
+                buttons: [{ label: 'Закрыть', className: 'btn-outline-teal', onClick: close => close() }]
+            });
+
+            const container = modal.el.querySelector('#telegram-modal-widget');
+            if (container && !container.querySelector('script')) {
                 const script = document.createElement('script');
-                script.id = 'telegram-widget-script';
                 script.async = true;
                 script.src = 'https://telegram.org/js/telegram-widget.js?22';
-                script.setAttribute('data-telegram-login', 'ruomi_fi_bot');
-                script.setAttribute('data-auth-url', 'https://ruomi.fi/auth/telegram/callback');
-                script.setAttribute('data-size', 'medium');
+                script.setAttribute('data-telegram-login', BOT_USERNAME);
+                script.setAttribute('data-size', 'large');
                 script.setAttribute('data-request-access', 'write');
                 script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-                
-                container.innerHTML = '';
                 container.appendChild(script);
             }
         }
-        
-        if (linkBtn) {
-            // Обработчик уже добавлен через onclick
+
+        function loadInlineTelegramWidget() {
+            const container = document.getElementById('telegram-login-widget-small');
+            if (!container || container.querySelector('script')) return;
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://telegram.org/js/telegram-widget.js?22';
+            script.setAttribute('data-telegram-login', BOT_USERNAME);
+            script.setAttribute('data-size', 'medium');
+            script.setAttribute('data-request-access', 'write');
+            script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+            container.appendChild(script);
         }
-        
-        if (unlinkBtn) {
-            unlinkBtn.addEventListener('click', unlinkTelegramAccount);
+
+        document.getElementById('link-telegram-btn')?.addEventListener('click', showTelegramLinkModal);
+        document.getElementById('unlink-telegram-btn')?.addEventListener('click', unlinkTelegramAccount);
+
+        const telegramTabLink = document.querySelector('a[href="#telegram"]');
+        if (telegramTabLink) {
+            telegramTabLink.addEventListener('shown.bs.tab', loadInlineTelegramWidget);
+            if (telegramTabLink.classList.contains('active')) {
+                loadInlineTelegramWidget();
+            }
         }
-        
-        // Change password form
-        document.getElementById('change-password-form').addEventListener('submit', function(e) {
+
+        document.getElementById('change-password-form')?.addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const newPassword = document.getElementById('new-password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
-            
             if (newPassword !== confirmPassword) {
-                alert('Пароли не совпадают');
+                RuomiModal.alert('Ошибка', 'Пароли не совпадают');
                 return;
             }
-            
-            // Here you would implement password change logic
-            alert('Функция смены пароля будет реализована позже');
+            RuomiModal.alert('Скоро', 'Смена пароля будет доступна в следующем обновлении');
         });
-        
-        // Check Telegram status on page load
+
         const telegramId = /*[[${user.telegramId}]]*/ null;
         const telegramUsername = /*[[${user.username}]]*/ '';
         if (telegramId != null) {
             updateTelegramStatus(true, telegramUsername);
-        } else {
-            updateTelegramStatus(false);
         }
     </script>
 

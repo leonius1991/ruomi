@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .permitAll()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/**", "/auth/telegram/callback", "/messages/send")
+                .ignoringRequestMatchers("/api/**", "/auth/telegram/callback", "/auth/set-password", "/messages/send")
                 // Разрешаем CSRF для админ-панели, но требуем токен
             );
         
