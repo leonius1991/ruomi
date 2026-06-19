@@ -2,6 +2,7 @@ package fi.newdoska.doska.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fi.newdoska.doska.service.BorderQueueAnalyticsService;
 import fi.newdoska.doska.service.BorderQueueTrackerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class BorderQueueController {
 
     private final BorderQueueTrackerService trackerService;
+    private final BorderQueueAnalyticsService analyticsService;
     private final ObjectMapper objectMapper;
 
     @GetMapping("/border-queues")
@@ -29,6 +31,7 @@ public class BorderQueueController {
         model.addAttribute("pageTitle", "Очередь на границе — Koidula и Luhamaa | ruomi.fi");
         model.addAttribute("metaDescription", "Live queue и статистика проезда через границу Estonia–Россия. Koidula, Luhamaa.");
         model.addAttribute("metaKeywords", "очередь на границе, koidula, luhamaa, estonia border");
+        model.addAttribute("analytics", analyticsService.buildAnalytics(BorderQueueTrackerService.DEFAULT_LANE));
         return "border-queues";
     }
 

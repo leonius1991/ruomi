@@ -23,4 +23,33 @@ public interface BorderQueueSnapshotRepository extends JpaRepository<BorderQueue
             ORDER BY s.checkpoint, s.lane
             """)
     List<BorderQueueSnapshot> findLatestPerLane();
+
+    @Query(value = """
+            SELECT checkpoint, lane, MAX(live_count) AS max_queue
+            FROM border_queue_snapshots
+            GROUP BY checkpoint, lane
+            ORDER BY max_queue DESC
+            """, nativeQuery = true)
+    List<Object[]> findMaxLiveCountByCheckpointAndLane();
+
+    @Query(value = """
+            SELECT checkpoint, lane, HOUR(captured_at) AS hr, AVG(live_count) AS avg_queue
+            FROM border_queue_snapshots
+            GROUP BY checkpoint, lane, HOUR(captured_at)
+            ORDER BY avg_queue ASC
+            """, nativeQuery = true)
+    List<Object[]> findAvgLiveCountByHour();
+
+    @Query(value = """
+            SELECT checkpoint, lane, AVG(live_count) AS avg_queue
+            FROM border_queue_snapshots
+            GROUP BY checkpoint, lane
+            """, nativeQuery = true)
+    List<Object[]> findOverallAvgLiveCount();
+
+    @Query(value = "SELECT COUNT(*) FROM border_queue_snapshots", nativeQuery = true)
+    long countSnapshots();
+
+    @Query(value = "SELECT MIN(captured_at) FROM border_queue_snapshots", nativeQuery = true)
+    LocalDateTime findEarliestSnapshotTime();
 }
