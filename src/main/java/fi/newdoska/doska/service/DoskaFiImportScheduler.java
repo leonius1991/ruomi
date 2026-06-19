@@ -12,13 +12,11 @@ import org.springframework.stereotype.Component;
 public class DoskaFiImportScheduler {
 
     private final DoskaFiImportService importService;
-
-    @Value("${doska.import.enabled:true}")
-    private boolean enabled;
+    private final AppSettingsService appSettingsService;
 
     @Scheduled(cron = "${doska.import.cron:0 0 4 * * *}")
     public void runDailyImport() {
-        if (!enabled) {
+        if (!appSettingsService.isDoskaImportEnabled()) {
             return;
         }
         log.info("Запуск ежедневного импорта объявлений с doska.fi");

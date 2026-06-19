@@ -33,6 +33,8 @@ public class AnalyticsController {
         model.addAttribute("topQueries", searchAnalyticsService.getTopQueries(20));
         model.addAttribute("recentSearches", searchAnalyticsService.getRecentSearches(50));
         model.addAttribute("zeroResultSearches", searchAnalyticsService.getZeroResultSearches(20));
+        model.addAttribute("topCities", searchAnalyticsService.getTopCities(10));
+        model.addAttribute("summary", searchAnalyticsService.getSummary());
         return "moderator/analytics";
     }
 

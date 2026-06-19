@@ -25,12 +25,15 @@ public class SearchAnalyticsService {
     @Value("${analytics.alert.email:}")
     private String alertEmail;
 
+    public record AnalyticsSummary(
+            long totalSearches,
+            long searchesToday,
+            long zeroResultCount,
+            long uniqueUsers
+    ) {}
+
     @Transactional
-    public void logSearch(String term,
-                          String category,
-                          String city,
-                          long resultsCount,
-                          String username) {
+    public void logSearch(String term, String category, String city, long resultsCount, String username) {
         if (term == null || term.isBlank()) {
             return;
         }
@@ -52,16 +55,24 @@ public class SearchAnalyticsService {
         }
     }
 
+    public AnalyticsSummary getSummary() {
+        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        return new AnalyticsSummary(
+                searchLogRepository.count(),
+                searchLogRepository.countByCreatedAtAfter(startOfDay),
+                searchLogRepository.countByResultsCount(0L),
+                searchLogRepository.countDistinctUsers()
+        );
+    }
+
     public List<SearchLog> getRecentSearches(int limit) {
-        return searchLogRepository.findTop10ByOrderByCreatedAtDesc()
-                .stream()
+        return searchLogRepository.findTop50ByOrderByCreatedAtDesc().stream()
                 .limit(limit)
                 .collect(Collectors.toList());
     }
 
     public List<SearchLog> getZeroResultSearches(int limit) {
-        return searchLogRepository.findTop10ByResultsCountOrderByCreatedAtDesc(0L)
-                .stream()
+        return searchLogRepository.findTop10ByResultsCountOrderByCreatedAtDesc(0L).stream()
                 .limit(limit)
                 .collect(Collectors.toList());
     }
@@ -71,5 +82,10 @@ public class SearchAnalyticsService {
                 .map(row -> new SearchStat((String) row[0], ((Number) row[1]).longValue()))
                 .collect(Collectors.toList());
     }
-}
 
+    public List<SearchStat> getTopCities(int limit) {
+        return searchLogRepository.findTopCities(PageRequest.of(0, limit)).stream()
+                .map(row -> new SearchStat((String) row[0], ((Number) row[1]).longValue()))
+                .collect(Collectors.toList());
+    }
+}

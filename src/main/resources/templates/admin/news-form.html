@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:replace="~{fragments/admin-layout :: admin-layout(${newsItem.id != null ? 'Редактировать новость' : 'Новая новость'}, ~{::content})}">
+    <th:block th:fragment="content">
+        <div class="admin-card">
+            <h2 class="mb-4" th:text="${newsItem.id != null ? 'Редактировать новость' : 'Новая новость'}">Новость</h2>
+            <form th:action="${newsItem.id != null ? '/admin/news/' + newsItem.id + '/edit' : '/admin/news/create'}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="mb-3">
+                    <label class="form-label">Заголовок</label>
+                    <input type="text" name="title" class="form-control" th:value="${newsItem.title}" required maxlength="200">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Краткое описание</label>
+                    <input type="text" name="summary" class="form-control" th:value="${newsItem.summary}" maxlength="500">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Текст</label>
+                    <textarea name="content" class="form-control" rows="8" required th:text="${newsItem.content}"></textarea>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="published" value="true" class="form-check-input" id="published" th:checked="${newsItem.published}">
+                    <label class="form-check-label" for="published">Опубликована</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a href="/admin/news" class="btn btn-outline-light border-secondary ms-2">Отмена</a>
+            </form>
+        </div>
+    </th:block>
+</div>
+</body>
+</html>

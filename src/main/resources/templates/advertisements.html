@@ -3,6 +3,7 @@
 <head>
     <th:block th:replace="~{fragments/head-common :: viewport}"></th:block>
     <title th:text="${pageTitle}">ruomi.fi - Все объявления</title>
+    <th:block th:replace="~{fragments/seo-meta :: seo-meta}"></th:block>
     <meta name="description" th:attr="content=${metaDescription}" content="Просмотр всех объявлений на ruomi.fi">
     <meta name="keywords" th:attr="content=${metaKeywords}" content="объявления, vfinke">
     
@@ -26,7 +27,7 @@
     <div th:replace="~{fragments/banners :: top-banners}"></div>
     
     <!-- Page Header -->
-    <section class="ruomi-page-header py-4">
+    <section class="ruomi-page-header ruomi-page-header-compact py-3">
         <div class="container">
             <h1 class="mb-0">
                 <i class="fas fa-list me-2"></i>
@@ -41,7 +42,7 @@
     </section>
 
     <!-- Filters Section -->
-    <section class="ruomi-filters-section py-3">
+    <section class="ruomi-filters-section ruomi-filters-compact py-2">
         <div class="container">
             <form method="get" action="/advertisements" class="row g-3">
                 <div class="col-md-3">
@@ -77,13 +78,13 @@
     </section>
 
     <!-- Advertisements List -->
-    <section class="py-5">
+    <section class="py-3">
         <div class="container">
             <div class="row">
                 <div class="col-lg-9">
-                    <div th:if="${advertisements != null && !advertisements.empty}" class="row g-3 ruomi-ad-grid">
-                        <div class="col-lg-4 col-md-6 col-12 col-sm-6 mb-1" th:each="ad : ${advertisements.content}">
-                            <div class="ad-card" th:style="${ad.isPremium} ? 'border-color:#F2C14E;' : (${ad.isUrgent} ? 'border-color:#E0573F;' : '')">
+                    <div th:if="${advertisements != null && !advertisements.empty}" class="row g-2 ruomi-ad-grid ruomi-ad-grid-compact">
+                        <div class="col-lg-3 col-md-4 col-6 mb-1" th:each="ad : ${advertisements.content}">
+                            <div class="ad-card ad-card-compact" th:style="${ad.isPremium} ? 'border-color:#F2C14E;' : (${ad.isUrgent} ? 'border-color:#E0573F;' : '')">
                                 <a th:href="@{/advertisement/{id}(id=${ad.id})}" class="ad-media d-block">
                                     <img th:if="${ad.images != null and !#lists.isEmpty(ad.images)}"
                                          th:src="@{/files/{fileName}(fileName=${ad.images[0].fileName})}" th:alt="${ad.title}">

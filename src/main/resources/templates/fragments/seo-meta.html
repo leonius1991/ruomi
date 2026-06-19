@@ -1,0 +1,11 @@
+<th:block th:fragment="seo-meta" xmlns:th="http://www.thymeleaf.org">
+    <meta name="description" th:if="${metaDescription}" th:content="${metaDescription}">
+    <meta name="keywords" th:if="${metaKeywords}" th:content="${metaKeywords}">
+    <meta name="robots" content="index, follow">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ruomi.fi">
+    <meta property="og:title" th:content="${pageTitle != null ? pageTitle : 'ruomi.fi'}">
+    <meta property="og:description" th:if="${metaDescription}" th:content="${metaDescription}">
+    <meta property="og:locale" content="ru_RU">
+    <meta name="twitter:card" content="summary">
+</th:block>

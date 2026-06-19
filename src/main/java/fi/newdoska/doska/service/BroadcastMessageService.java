@@ -91,5 +91,22 @@ public class BroadcastMessageService {
         return broadcastRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Рассылка не найдена"));
     }
+
+    public void updateBroadcast(Long id, String content) {
+        BroadcastMessage broadcast = getBroadcast(id);
+        if (Boolean.TRUE.equals(broadcast.getSent())) {
+            throw new IllegalStateException("Отправленную рассылку нельзя редактировать");
+        }
+        broadcast.setContent(content);
+        broadcastRepository.save(broadcast);
+    }
+
+    public void deleteBroadcast(Long id) {
+        BroadcastMessage broadcast = getBroadcast(id);
+        if (Boolean.TRUE.equals(broadcast.getSent())) {
+            throw new IllegalStateException("Отправленную рассылку нельзя удалить");
+        }
+        broadcastRepository.delete(broadcast);
+    }
 }
 

@@ -32,6 +32,7 @@ public class ModeratorController {
         model.addAttribute("topQueries", searchAnalyticsService.getTopQueries(10));
         model.addAttribute("zeroResultQueries", searchAnalyticsService.getZeroResultSearches(10));
         model.addAttribute("moderationLogs", moderationLogService.getAllLogs(0, 20).getContent());
+        model.addAttribute("searchSummary", searchAnalyticsService.getSummary());
         return "moderator/dashboard";
     }
 

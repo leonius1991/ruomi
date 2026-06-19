@@ -26,16 +26,14 @@ public class DoskaFiImportService {
     private final AdvertisementRepository advertisementRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${doska.import.enabled:true}")
-    private boolean enabled;
+    private final AppSettingsService appSettingsService;
 
     @Value("${doska.import.daily-limit:15}")
     private int dailyLimit;
 
     @Transactional
     public ImportResult importLatest() {
-        if (!enabled) {
+        if (!appSettingsService.isDoskaImportEnabled()) {
             log.debug("Импорт doska.fi отключён");
             return new ImportResult(0, 0, 0);
         }

@@ -34,6 +34,21 @@
                 </div>
 
                 <div class="admin-card mb-0">
+                    <h3 class="mb-3">Настройки импорта</h3>
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                        <span>Doska.fi парсер:</span>
+                        <form th:if="${doskaImportEnabled}" th:action="@{/admin/settings/doska-import}" method="post" class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="enabled" value="false"/>
+                            <button type="submit" class="btn btn-sm btn-warning">Отключить парсинг</button>
+                        </form>
+                        <form th:if="${!doskaImportEnabled}" th:action="@{/admin/settings/doska-import}" method="post" class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="enabled" value="true"/>
+                            <button type="submit" class="btn btn-sm btn-success">Включить парсинг</button>
+                        </form>
+                        <span class="small text-muted" th:text="${doskaImportEnabled ? 'Активен (ежедневно ~04:00)' : 'Отключён'}"></span>
+                    </div>
                     <h3 class="mb-3">Быстрые действия</h3>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="/admin/users" class="btn btn-primary">

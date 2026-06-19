@@ -13,10 +13,22 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long> {
 
     List<SearchLog> findTop10ByOrderByCreatedAtDesc();
 
+    List<SearchLog> findTop50ByOrderByCreatedAtDesc();
+
     List<SearchLog> findTop10ByResultsCountOrderByCreatedAtDesc(Long resultsCount);
 
-    @Query("SELECT s.term AS term, COUNT(s.id) AS cnt FROM SearchLog s GROUP BY s.term ORDER BY cnt DESC")
+    long countByResultsCount(Long resultsCount);
+
+    long countByCreatedAtAfter(java.time.LocalDateTime since);
+
+    @Query("SELECT s.term, COUNT(s.id) FROM SearchLog s GROUP BY s.term ORDER BY COUNT(s.id) DESC")
     List<Object[]> findTopTerms(Pageable pageable);
+
+    @Query("SELECT s.city, COUNT(s.id) FROM SearchLog s WHERE s.city IS NOT NULL AND s.city <> '' GROUP BY s.city ORDER BY COUNT(s.id) DESC")
+    List<Object[]> findTopCities(Pageable pageable);
+
+    @Query("SELECT COUNT(DISTINCT s.username) FROM SearchLog s WHERE s.username IS NOT NULL AND s.username <> ''")
+    long countDistinctUsers();
 }
 
 

@@ -27,6 +27,8 @@ public class BorderQueueController {
         model.addAttribute("laneStatsJson", objectMapper.writeValueAsString(dashboard.laneStats()));
         model.addAttribute("defaultLane", BorderQueueTrackerService.DEFAULT_LANE);
         model.addAttribute("pageTitle", "Очередь на границе — Koidula и Luhamaa | ruomi.fi");
+        model.addAttribute("metaDescription", "Live queue и статистика проезда через границу Estonia–Россия. Koidula, Luhamaa.");
+        model.addAttribute("metaKeywords", "очередь на границе, koidula, luhamaa, estonia border");
         return "border-queues";
     }
 

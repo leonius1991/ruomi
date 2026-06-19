@@ -1,0 +1,58 @@
+/* Scroll reveal animations */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal-on-scroll.reveal-delay-1 { transition-delay: 0.08s; }
+.reveal-on-scroll.reveal-delay-2 { transition-delay: 0.16s; }
+.reveal-on-scroll.reveal-delay-3 { transition-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal-on-scroll {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* Compact ad cards */
+.ad-card.ad-card-compact .ad-media { aspect-ratio: 16 / 10; }
+.ad-card.ad-card-compact .ad-media .ad-noimg { font-size: 1.6rem; }
+.ad-card.ad-card-compact .price-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.18rem 0.55rem;
+    left: 0.45rem;
+    bottom: 0.45rem;
+}
+.ad-card.ad-card-compact .ad-body { padding: 0.55rem 0.65rem 0.65rem; }
+.ad-card.ad-card-compact .ad-title { font-size: 0.82rem; line-height: 1.3; }
+.ad-card.ad-card-compact .ad-cat { font-size: 0.68rem; margin-bottom: 0.15rem; }
+.ad-card.ad-card-compact .ad-meta { font-size: 0.68rem; }
+.ad-card.ad-card-compact .fav-btn { width: 30px; height: 30px; font-size: 0.75rem; }
+
+.ruomi-ad-grid-compact > [class*="col-"] { margin-bottom: 0.5rem; }
+
+/* Features section subtitle */
+.ruomi-section-subtitle {
+    max-width: 520px;
+    margin: 0.75rem auto 0;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--warm-muted);
+}
+
+/* Compact ads listing page */
+.ruomi-page-header-compact { padding: 1.25rem 0 !important; }
+.ruomi-page-header-compact h1 { font-size: 1.35rem !important; }
+.ruomi-filters-compact { padding: 0.75rem 0 !important; }
+.ruomi-filters-compact .form-control,
+.ruomi-filters-compact .form-select { font-size: 0.875rem; padding: 0.4rem 0.65rem; }

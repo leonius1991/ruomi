@@ -101,7 +101,7 @@ public class MainController {
         } else if (search != null && !search.isBlank()) {
             applySeoMeta(model, seoMetadataService.getSearchMeta(search));
         } else {
-            applySeoMeta(model, seoMetadataService.getHomePageMeta());
+            applySeoMeta(model, seoMetadataService.getPageMeta("advertisements"));
         }
 
         if (search != null && !search.isBlank()) {
@@ -140,6 +140,10 @@ public class MainController {
             model.addAttribute("user", user);
             model.addAttribute("categoryEntity", categoryEntity);
             model.addAttribute("sidebarBanners", bannerService.getActiveBannersByPosition("SIDEBAR"));
+            applySeoMeta(model, seoMetadataService.getAdvertisementMeta(
+                    advertisement.getTitle(),
+                    advertisement.getCategory().getDisplayName(),
+                    advertisement.getCity()));
         });
         
         return "advertisement-detail";
@@ -149,26 +153,31 @@ public class MainController {
     public String about(Model model) {
         model.addAttribute("totalAdvertisements", advertisementService.getTotalApprovedAdvertisementsCount());
         model.addAttribute("totalUsers", userService.getTotalUsersCount());
+        applySeoMeta(model, seoMetadataService.getPageMeta("about"));
         return "about";
     }
     
     @GetMapping("/contact")
-    public String contact() {
+    public String contact(Model model) {
+        applySeoMeta(model, seoMetadataService.getPageMeta("contact"));
         return "contact";
     }
     
     @GetMapping("/terms")
-    public String terms() {
+    public String terms(Model model) {
+        applySeoMeta(model, seoMetadataService.getPageMeta("terms"));
         return "terms";
     }
     
     @GetMapping("/privacy")
-    public String privacy() {
+    public String privacy(Model model) {
+        applySeoMeta(model, seoMetadataService.getPageMeta("privacy"));
         return "privacy";
     }
     
     @GetMapping("/help")
-    public String help() {
+    public String help(Model model) {
+        applySeoMeta(model, seoMetadataService.getPageMeta("help"));
         return "help";
     }
     

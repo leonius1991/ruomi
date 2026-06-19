@@ -8,6 +8,7 @@ import fi.newdoska.doska.entity.User;
 import fi.newdoska.doska.repository.CategoryRepository;
 import fi.newdoska.doska.repository.SeoMetadataRepository;
 import fi.newdoska.doska.repository.SiteThemeRepository;
+import fi.newdoska.doska.service.AppSettingsService;
 import fi.newdoska.doska.service.AdvertisementService;
 import fi.newdoska.doska.service.BroadcastMessageService;
 import fi.newdoska.doska.service.CategorySubscriptionService;
@@ -35,15 +36,24 @@ public class AdminController {
     private final UserService userService;
     private final AdvertisementService advertisementService;
     private final DoskaFiImportService doskaFiImportService;
+    private final AppSettingsService appSettingsService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("totalUsers", userService.getTotalUsersCount());
         model.addAttribute("activeAdvertisements", advertisementService.getTotalApprovedAdvertisementsCount());
         model.addAttribute("pendingAdvertisements", advertisementService.getPendingAdvertisementsCount());
-        // Жалобы пока не реализованы, ставим 0
         model.addAttribute("totalReports", 0L);
+        model.addAttribute("doskaImportEnabled", appSettingsService.isDoskaImportEnabled());
         return "admin/dashboard";
+    }
+
+    @PostMapping("/settings/doska-import")
+    public String toggleDoskaImport(@RequestParam boolean enabled, RedirectAttributes redirectAttributes) {
+        appSettingsService.setDoskaImportEnabled(enabled);
+        redirectAttributes.addFlashAttribute("success",
+                enabled ? "Импорт с doska.fi включён" : "Импорт с doska.fi отключён");
+        return "redirect:/admin/dashboard";
     }
 
     @PostMapping("/import-doska")
@@ -158,6 +168,30 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("success", "Рассылка успешно отправлена!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка при отправке рассылки: " + e.getMessage());
+        }
+        return "redirect:/admin/broadcasts";
+    }
+
+    @PostMapping("/broadcasts/{id}/update")
+    public String updateBroadcast(@PathVariable Long id,
+                                  @RequestParam String content,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            broadcastMessageService.updateBroadcast(id, content);
+            redirectAttributes.addFlashAttribute("success", "Рассылка обновлена");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/broadcasts";
+    }
+
+    @PostMapping("/broadcasts/{id}/delete")
+    public String deleteBroadcast(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            broadcastMessageService.deleteBroadcast(id);
+            redirectAttributes.addFlashAttribute("success", "Рассылка удалена");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/broadcasts";
     }
